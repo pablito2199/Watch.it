@@ -61,6 +61,15 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping(
+            path = "{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<Movie> put(@PathVariable("id") String email, @RequestBody User user) {
+        users.put(email, user);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping(
             path = "{id}"
     )

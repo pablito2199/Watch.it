@@ -60,6 +60,15 @@ public class MovieController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping(
+            path = "{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<Movie> put(@PathVariable("id") String id, @RequestBody Movie movie) {
+        movies.put(id, movie);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping(
             path = "{id}"
     )

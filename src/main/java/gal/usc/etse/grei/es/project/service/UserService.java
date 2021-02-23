@@ -39,6 +39,13 @@ public class UserService {
         users.insert(user);
     }
 
+    public void put(String email, User user) {
+        if (users.findById(email).isPresent()) {
+            user.setEmail(email);
+            users.save(user);
+        }
+    }
+
     public void delete(String email) {
         users.deleteById(email);
     }

@@ -38,6 +38,13 @@ public class MovieService {
         movies.insert(movie);
     }
 
+    public void put(String id, Movie movie) {
+        if (movies.findById(id).isPresent()) {
+            movie.setId(id);
+            movies.save(movie);
+        }
+    }
+
     public void delete(String id) {
         movies.deleteById(id);
     }
