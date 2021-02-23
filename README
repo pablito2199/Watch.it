@@ -1,0 +1,6 @@
+Neste proxecto atoparás exemplos básicos de como desenvolver APIs REST usando Spring Boot.
+Cada un dos incrementos (API REST básica, autenticación, navegabilidade, documentación...)
+está arquivado cun tag no repo, polo que podes acceder rápidamente ao exemplo que precises.
+
+Tags dispoñibles:
+  - `rest-basico` Exemplo de API REST básica con consultas a un repositorio de MongoDB.
