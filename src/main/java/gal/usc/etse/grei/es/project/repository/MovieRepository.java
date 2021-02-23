@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 public interface MovieRepository extends MongoRepository<Movie, String> {
+    //recuperamos todos los campos de las películas puestos a 1
     @Query(value = "{}", fields = "{_id: 1, title: 1, overview: 1, genres: 1, releaseDate: 1, resources: 1}")
     Page<Movie> findAllMovies(Pageable request);
 }

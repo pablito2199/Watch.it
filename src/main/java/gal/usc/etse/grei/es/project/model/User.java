@@ -19,7 +19,9 @@ public class User {
     private Date birthday;
     private List<User> friends;
 
-    public User() {}
+    public User() {
+    }
+
     public User(String email, String name, String country, String picture, Date birthday, List<User> friends) {
         this.email = email;
         this.name = name;
@@ -32,18 +34,23 @@ public class User {
     public String getEmail() {
         return email;
     }
+
     public String getName() {
         return name;
     }
+
     public String getCountry() {
         return country;
     }
+
     public String getPicture() {
         return picture;
     }
+
     public Date getBirthday() {
         return birthday;
     }
+
     public List<User> getFriends() {
         return friends;
     }
@@ -52,22 +59,27 @@ public class User {
         this.email = email;
         return this;
     }
+
     public User setName(String name) {
         this.name = name;
         return this;
     }
+
     public User setCountry(String country) {
         this.country = country;
         return this;
     }
+
     public User setPicture(String picture) {
         this.picture = picture;
         return this;
     }
+
     public User setBirthday(Date birthday) {
         this.birthday = birthday;
         return this;
     }
+
     public User setFriends(List<User> friends) {
         this.friends = friends;
         return this;

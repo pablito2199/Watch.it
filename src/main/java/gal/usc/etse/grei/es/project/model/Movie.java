@@ -29,7 +29,8 @@ public class Movie {
     private Integer runtime;
     private Long revenue;
 
-    public Movie() { }
+    public Movie() {
+    }
 
     public Movie(String id, String title, String overview, String tagline, Collection collection, List<String> genres, Date releaseDate, List<String> keywords, List<Producer> producers, List<Crew> crew, List<Cast> cast, List<Resource> resources, Long budget, Status status, Integer runtime, Long revenue) {
         this.id = id;

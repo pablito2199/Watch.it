@@ -15,36 +15,39 @@ import java.util.Optional;
 public class MovieService {
     private final MovieRepository movies;
 
+    //Instancia
     @Autowired
     public MovieService(MovieRepository movies) {
         this.movies = movies;
     }
 
+    //devuelve la película con el id correspondiente
     public Optional<Movie> get(String id) {
         return movies.findById(id);
     }
 
+    //devuelve la lista de películas paginadas
     public Optional<Page<Movie>> get(int page, int size, Sort sort) {
         Pageable request = PageRequest.of(page, size, sort);
         Page<Movie> result = movies.findAllMovies(request);
 
-        if(result.isEmpty())
+        if (result.isEmpty())
             return Optional.empty();
 
         else return Optional.of(result);
     }
 
+    //inserta la película
     public void insert(Movie movie) {
         movies.insert(movie);
     }
 
+    //modifica la película
     public void put(String id, Movie movie) {
-        if (movies.findById(id).isPresent()) {
-            movie.setId(id);
-            movies.save(movie);
-        }
+        movies.save(movie);
     }
 
+    //elimina la película con el id correspondiente
     public void delete(String id) {
         movies.deleteById(id);
     }

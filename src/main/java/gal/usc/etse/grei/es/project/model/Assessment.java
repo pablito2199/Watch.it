@@ -17,7 +17,9 @@ public class Assessment {
     private Movie movie;
     private String comment;
 
-    public Assessment() { }
+    public Assessment() {
+    }
+
     public Assessment(String id, Integer rating, User user, Movie movie, String comment) {
         this.id = id;
         this.rating = rating;
@@ -29,15 +31,19 @@ public class Assessment {
     public String getId() {
         return id;
     }
+
     public Integer getRating() {
         return rating;
     }
+
     public User getUser() {
         return user;
     }
+
     public Movie getMovie() {
         return movie;
     }
+
     public String getComment() {
         return comment;
     }
@@ -46,18 +52,22 @@ public class Assessment {
         this.id = id;
         return this;
     }
+
     public Assessment setRating(Integer rating) {
         this.rating = rating;
         return this;
     }
+
     public Assessment setUser(User user) {
         this.user = user;
         return this;
     }
+
     public Assessment setMovie(Movie movie) {
         this.movie = movie;
         return this;
     }
+
     public Assessment setComment(String comment) {
         this.comment = comment;
         return this;

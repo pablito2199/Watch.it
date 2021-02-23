@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Crew extends Person{
+public class Crew extends Person {
     private String job;
 
     public Crew() {
