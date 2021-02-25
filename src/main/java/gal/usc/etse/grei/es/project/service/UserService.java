@@ -45,8 +45,11 @@ public class UserService {
 
     //añade el amigo al usuario
     public void addFriend(String email, User user) {
+        //buscamos los amigos del usuario
         List<User> friends = users.findById(email).get().getFriends();
+        //añadimos el amigo
         friends.add(user);
+        //guardamos la lista modificada de amigos
         users.save(users.findById(email).get().setFriends(friends));
     }
 
@@ -60,15 +63,18 @@ public class UserService {
         users.deleteById(email);
     }
 
-    //elimina el usuario con el email correspondiente
+    //elimina el amigo del usuario correspondiente
     public void deleteFriend(String user1, String user2) {
+        //buscamos los amigos del usuario
         List<User> friends = users.findById(user1).get().getFriends();
         for (User f : friends) {
             if (f.getEmail().equals(user2)) {
+                //eliminamos el amigo y salimos del bucle
                 friends.remove(f);
                 break;
             }
         }
+        //guardamos la lista modificada de amigos
         users.save(users.findById(user1).get().setFriends(friends));
     }
 }

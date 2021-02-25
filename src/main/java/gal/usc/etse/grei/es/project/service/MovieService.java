@@ -43,7 +43,7 @@ public class MovieService {
     }
 
     //modifica la película
-    public void put(String id, Movie movie) {
+    public void put(Movie movie) {
         movies.save(movie);
     }
 

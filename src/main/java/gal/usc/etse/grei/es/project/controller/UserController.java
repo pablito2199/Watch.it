@@ -87,15 +87,15 @@ public class UserController {
                     return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
             } else if (checkFriends(user.getFriends()) == 1) {
-                //devolvemos código de error 404 al producirse un de búsqueda
+                //devolvemos código de error 404 al producirse un error de búsqueda
                 return ResponseEntity.notFound().build();
             } else {
                 //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
         } else {
-            //devolvemos código de error 404 al producirse un error
-            return ResponseEntity.notFound().build();
+            //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -115,18 +115,18 @@ public class UserController {
                     //devolvemos código de error 200 al ir todo bien
                     return ResponseEntity.ok().build();
                 } else if (checkFriend(email, friend) == 1) {
-                    //devolvemos código de error 404 al producirse un de búsqueda
-                    return ResponseEntity.notFound().build();
+                    //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+                    return ResponseEntity.badRequest().build();
                 } else {
                     //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
                     return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
             } else {
-                //devolvemos código de error 404 al producirse un error
-                return ResponseEntity.notFound().build();
+                //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+                return ResponseEntity.badRequest().build();
             }
         } else {
-            //devolvemos código de error 404 al producirse un de búsqueda
+            //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
     }
@@ -140,23 +140,26 @@ public class UserController {
     //recoge la variable del id, pues necesita buscar el email que modificar, y el body con el objeto
     ResponseEntity<Movie> put(@PathVariable("id") String email, @RequestBody User user) {
         //si el email existe, y si los nuevos email y aniversario coinciden, pues no se pueden modificar, modificamos
-        if (users.get(email).isPresent() &&
-                users.get(email).get().getBirthday().equals(user.getBirthday()) &&
+        if (users.get(email).isPresent())
+            if (users.get(email).get().getBirthday().equals(user.getBirthday()) &&
                 users.get(email).get().getEmail().equals(user.getEmail())) {
-            if (checkFriends(user.getFriends()) == 0) {
-                //modificamos el usuario correspondiente
-                users.put(user);
-                //devolvemos código de error 200 al ir todo bien
-                return ResponseEntity.ok().build();
-            } else if (checkFriends(user.getFriends()) == 1) {
-                //devolvemos código de error 404 al producirse un de búsqueda
-                return ResponseEntity.notFound().build();
+                if (checkFriends(user.getFriends()) == 0) {
+                    //modificamos el usuario correspondiente
+                    users.put(user);
+                    //devolvemos código de error 200 al ir todo bien
+                    return ResponseEntity.ok().build();
+                } else if (checkFriends(user.getFriends()) == 1) {
+                    //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+                    return ResponseEntity.badRequest().build();
+                } else {
+                    //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                }
             } else {
-                //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            }
+                //devolvemos código de error 403, pues no se pueden modificar dichos campos
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } else {
-            //devolvemos código de error 404 al producirse un error
+            //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
     }
@@ -168,8 +171,16 @@ public class UserController {
     )
     //recoge la variable del id, pues necesita buscar el email para eliminar el usuario
     ResponseEntity<User> delete(@PathVariable("id") String email) {
-        users.delete(email);
-        return ResponseEntity.ok().build();
+        //si el usuario existe, podremos eliminar el usuario
+        if (users.get(email).isPresent()) {
+            //eliminamos el usuario
+            users.delete(email);
+            //devolvemos código de error 200 al ir todo bien
+            return ResponseEntity.ok().build();
+        } else {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
     }
 
     //método DELETE para eliminar un usuario
@@ -187,7 +198,7 @@ public class UserController {
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.ok().build();
         } else {
-            //devolvemos código de error 404 al producirse un error
+            //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
     }
@@ -226,12 +237,10 @@ public class UserController {
             if (u.getEmail().equals(users.get(u.getEmail()).get().getEmail()) &&
                     u.getName().equals(users.get(u.getEmail()).get().getName())) {
                 //comprobamos si existe algún amigo
-                for (User us1 : users.get(u.getEmail()).get().getFriends()) {
-                    for (User us2 : u.getFriends()) {
-                        //si existe algún usuario con ese email en amigos, no se introducirá
-                        if (us1.getEmail().equals(us2.getEmail())) {
-                            return 2;
-                        }
+                for (User us : users.get(u.getEmail()).get().getFriends()) {
+                    //si existe algún usuario con ese email en amigos, no se introducirá
+                    if (us.getEmail().equals(u.getEmail())) {
+                        return 2;
                     }
                 }
                 return 0;
@@ -242,7 +251,7 @@ public class UserController {
         return 0;
     }
 
-    //comprobamos que los amigos cumplan los requisitos necesarios
+    //comprobamos que el amigo se encuentra en la lista de amigos
     private boolean friendExists(String user1, String user2) {
         for (User u : users.get(user1).get().getFriends()) {
             if (u.getEmail().equals(user2)) {
@@ -252,4 +261,3 @@ public class UserController {
         return false;
     }
 }
-

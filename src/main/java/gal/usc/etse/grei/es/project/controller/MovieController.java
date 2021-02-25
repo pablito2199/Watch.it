@@ -78,8 +78,8 @@ public class MovieController {
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.ok().build();
         } else {
-            //devolvemos código de error 404 al producirse un error
-            return ResponseEntity.notFound().build();
+            //devolvemos código de error 400 al intentar añadir una película sin título
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -93,11 +93,11 @@ public class MovieController {
     ResponseEntity<Movie> put(@PathVariable("id") String id, @RequestBody Movie movie) {
         //si el id existe, modificamos
         if (movies.get(id).isPresent()) {
-            movies.put(id, movie);
+            movies.put(movie);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.ok().build();
         } else {
-            //devolvemos código de error 404 al producirse un error
+            //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
     }
@@ -109,7 +109,15 @@ public class MovieController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la película
     ResponseEntity<Movie> delete(@PathVariable("id") String id) {
-        movies.delete(id);
-        return ResponseEntity.ok().build();
+        //si la película existe, podremos eliminar la película
+        if (movies.get(id).isPresent()) {
+            //eliminamos la película
+            movies.delete(id);
+            //devolvemos código de error 200 al ir todo bien
+            return ResponseEntity.ok().build();
+        } else {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
     }
 }
