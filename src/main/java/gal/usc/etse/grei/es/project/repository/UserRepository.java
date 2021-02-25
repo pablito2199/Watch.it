@@ -8,6 +8,9 @@ import org.springframework.data.mongodb.repository.Query;
 
 public interface UserRepository extends MongoRepository<User, String> {
     //recuperamos todos los campos de los usuarios salvo email y amigos
-    @Query(value = "{}", fields = "{email: 0, friends: 0}")
-    Page<User> findAllUsers(Pageable request);
+    @Query(value = "{}"/*"{$and :["
+            + "?#{ [0] == null ? { $where : 'true'} : { 'name' : [0] } },"
+            + "?#{ [1] == null ? { $where : 'true'} : { 'email' : [1] } },"
+            + "]}"*/, fields = "{email: 0, friends: 0}")
+    Page<User> findAllUsers(/*String name, String email, */Pageable request);
 }

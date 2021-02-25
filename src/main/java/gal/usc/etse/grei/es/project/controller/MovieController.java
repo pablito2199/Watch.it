@@ -70,11 +70,17 @@ public class MovieController {
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    //insertamos la película correspondiente
     ResponseEntity<Movie> insert(@RequestBody Movie movie) {
-        movies.insert(movie);
-        //devolvemos código de error 200 al ir todo bien
-        return ResponseEntity.ok().build();
+        //debe tener el título obligatoriamente
+        if (movie.getTitle() != null) {
+            //insertamos la película correspondiente
+            movies.insert(movie);
+            //devolvemos código de error 200 al ir todo bien
+            return ResponseEntity.ok().build();
+        } else {
+            //devolvemos código de error 404 al producirse un error
+            return ResponseEntity.notFound().build();
+        }
     }
 
     //método PUT para modificar una película

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,9 +28,9 @@ public class UserService {
     }
 
     //devuelve la lista de usuarios paginados
-    public Optional<Page<User>> get(int page, int size, Sort sort) {
+    public Optional<Page<User>> get(int page, int size, Sort sort/*, User user*/) {
         Pageable request = PageRequest.of(page, size, sort);
-        Page<User> result = users.findAllUsers(request);
+        Page<User> result = users.findAllUsers(/*user.getName(), user.getEmail(), */request);
 
         if (result.isEmpty())
             return Optional.empty();
@@ -42,6 +43,13 @@ public class UserService {
         users.insert(user);
     }
 
+    //añade el amigo al usuario
+    public void addFriend(String email, User user) {
+        List<User> friends = users.findById(email).get().getFriends();
+        friends.add(user);
+        users.save(users.findById(email).get().setFriends(friends));
+    }
+
     //modifica el usuario
     public void put(User user) {
         users.save(user);
@@ -50,5 +58,17 @@ public class UserService {
     //elimina el usuario con el email correspondiente
     public void delete(String email) {
         users.deleteById(email);
+    }
+
+    //elimina el usuario con el email correspondiente
+    public void deleteFriend(String user1, String user2) {
+        List<User> friends = users.findById(user1).get().getFriends();
+        for (User f : friends) {
+            if (f.getEmail().equals(user2)) {
+                friends.remove(f);
+                break;
+            }
+        }
+        users.save(users.findById(user1).get().setFriends(friends));
     }
 }
