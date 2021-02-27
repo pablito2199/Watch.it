@@ -3,10 +3,7 @@ package gal.usc.etse.grei.es.project.service;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,9 +25,14 @@ public class UserService {
     }
 
     //devuelve la lista de usuarios paginados
-    public Optional<Page<User>> get(int page, int size, Sort sort/*, User user*/) {
+    public Optional<Page<User>> get(int page, int size, Sort sort, String email, String name) {
         Pageable request = PageRequest.of(page, size, sort);
-        Page<User> result = users.findAllUsers(/*user.getName(), user.getEmail(), */request);
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<User> filter = Example.of(new User().setEmail(email).setName(name), matcher);
+        Page<User> result = users.findAll(filter, request);
+        for (User u : result) {
+            u.setFriends(null).setEmail(null);
+        }
 
         if (result.isEmpty())
             return Optional.empty();

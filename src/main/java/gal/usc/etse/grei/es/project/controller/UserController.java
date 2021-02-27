@@ -42,14 +42,17 @@ public class UserController {
     //método GET al recuperar usuarios
     //produces lo que devuelve
     @GetMapping(
-            produces = MediaType.APPLICATION_JSON_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recogemos todos los usuarios paginando con los requestparam
     ResponseEntity<Page<User>> get(
+            //parámetros seguidos de interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
-            @RequestParam(name = "sort", defaultValue = "") List<String> sort/*,
-            @RequestBody User user*/
+            @RequestParam(name = "sort", defaultValue = "") List<String> sort,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "name", required = false) String name
     ) {
         //ordenamos la lista obtenida
         List<Sort.Order> criteria = sort.stream().map(string -> {
@@ -65,7 +68,7 @@ public class UserController {
                 .collect(Collectors.toList());
 
         //devolvemos los usuarios obtenidos
-        return ResponseEntity.of(users.get(page, size, Sort.by(criteria)));
+        return ResponseEntity.of(users.get(page, size, Sort.by(criteria), email, name));
     }
 
     //método POST al crear un nuevo usuario
