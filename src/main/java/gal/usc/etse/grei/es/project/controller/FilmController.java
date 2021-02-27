@@ -46,8 +46,9 @@ public class FilmController {
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    //recogemos todas las peículas paginando con los requestparam
+    //recogemos todas las películas paginando con los requestparam
     ResponseEntity<Page<Film>> get(
+            //parámetros a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "") List<String> sort,
@@ -56,7 +57,9 @@ public class FilmController {
             @RequestParam(name = "producers", required = false) List<Producer> producers,
             @RequestParam(name = "crew", required = false) List<Crew> crew,
             @RequestParam(name = "cast", required = false) List<Cast> cast,
-            @RequestParam(name = "releaseDate", required = false) Date releaseDate
+            @RequestParam(name = "day", required = false) Integer day,
+            @RequestParam(name = "month", required = false) Integer month,
+            @RequestParam(name = "year", required = false) Integer year
     ) {
         //ordenamos la lista obtenida
         List<Sort.Order> criteria = sort.stream().map(string -> {
@@ -71,6 +74,7 @@ public class FilmController {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        Date releaseDate = new Date(day, month, year);
         //devolvemos los usuarios obtenidos
         return ResponseEntity.of(films.get(page, size, Sort.by(criteria), releaseDate));
     }

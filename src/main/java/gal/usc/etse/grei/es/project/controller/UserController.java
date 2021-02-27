@@ -47,7 +47,7 @@ public class UserController {
     )
     //recogemos todos los usuarios paginando con los requestparam
     ResponseEntity<Page<User>> get(
-            //parámetros seguidos de interrogación para el filtrado
+            //parámetros a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "") List<String> sort,
