@@ -1,7 +1,7 @@
 package gal.usc.etse.grei.es.project.controller;
 
-import gal.usc.etse.grei.es.project.model.Movie;
-import gal.usc.etse.grei.es.project.service.MovieService;
+import gal.usc.etse.grei.es.project.model.Film;
+import gal.usc.etse.grei.es.project.service.FilmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -13,28 +13,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-//link al servicio que se encuentra en /movies
+//link al servicio que se encuentra en /films
 @RestController
-@RequestMapping("movies")
-public class MovieController {
-    private final MovieService movies;
+@RequestMapping("films")
+public class FilmController {
+    private final FilmService films;
 
     //Instancia
     @Autowired
-    public MovieController(MovieService movies) {
-        this.movies = movies;
+    public FilmController(FilmService films) {
+        this.films = films;
     }
 
     //método GET al recuperar una película
-    //link al servicio en movies/{id}, produces lo que devuelve
+    //link al servicio en films/{id}, produces lo que devuelve
     @GetMapping(
             path = "{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //cogemos la variable id del path y la identificamos con el id
-    ResponseEntity<Movie> get(@PathVariable("id") String id) {
+    ResponseEntity<Film> get(@PathVariable("id") String id) {
         //recuperamos la película obtenida
-        return ResponseEntity.of(movies.get(id));
+        return ResponseEntity.of(films.get(id));
     }
 
     //método GET al recuperar películas
@@ -43,7 +43,7 @@ public class MovieController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recogemos todas las peículas paginando con los requestparam
-    ResponseEntity<Page<Movie>> get(
+    ResponseEntity<Page<Film>> get(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
             @RequestParam(name = "sort", defaultValue = "") List<String> sort
@@ -62,7 +62,7 @@ public class MovieController {
                 .collect(Collectors.toList());
 
         //devolvemos los usuarios obtenidos
-        return ResponseEntity.of(movies.get(page, size, Sort.by(criteria)));
+        return ResponseEntity.of(films.get(page, size, Sort.by(criteria)));
     }
 
     //método POST al crear una nueva película
@@ -70,11 +70,11 @@ public class MovieController {
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    ResponseEntity<Movie> insert(@RequestBody Movie movie) {
+    ResponseEntity<Film> insert(@RequestBody Film film) {
         //debe tener el título obligatoriamente
-        if (movie.getTitle() != null) {
+        if (film.getTitle() != null) {
             //insertamos la película correspondiente
-            movies.insert(movie);
+            films.insert(film);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.ok().build();
         } else {
@@ -84,16 +84,16 @@ public class MovieController {
     }
 
     //método PUT para modificar una película
-    //link al servicio en movies/{id}, consumes, pues necesita los datos del body
+    //link al servicio en films/{id}, consumes, pues necesita los datos del body
     @PutMapping(
             path = "{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<Movie> put(@PathVariable("id") String id, @RequestBody Movie movie) {
+    ResponseEntity<Film> put(@PathVariable("id") String id, @RequestBody Film film) {
         //si el id existe, modificamos
-        if (movies.get(id).isPresent()) {
-            movies.put(movie);
+        if (films.get(id).isPresent()) {
+            films.put(film);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.ok().build();
         } else {
@@ -103,16 +103,16 @@ public class MovieController {
     }
 
     //método DELETE para eliminar una película
-    //link al servicio en movies/{id}
+    //link al servicio en films/{id}
     @DeleteMapping(
             path = "{id}"
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la película
-    ResponseEntity<Movie> delete(@PathVariable("id") String id) {
+    ResponseEntity<Film> delete(@PathVariable("id") String id) {
         //si la película existe, podremos eliminar la película
-        if (movies.get(id).isPresent()) {
+        if (films.get(id).isPresent()) {
             //eliminamos la película
-            movies.delete(id);
+            films.delete(id);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.ok().build();
         } else {

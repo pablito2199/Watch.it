@@ -27,9 +27,13 @@ public class UserService {
     //devuelve la lista de usuarios paginados
     public Optional<Page<User>> get(int page, int size, Sort sort, String email, String name) {
         Pageable request = PageRequest.of(page, size, sort);
+        //el filtro deberá contener lo especificado debido al "CONTAINS"
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        //filtrado si se pasa un email o nombre
         Example<User> filter = Example.of(new User().setEmail(email).setName(name), matcher);
+        //buscamos los usuarios según los filtros
         Page<User> result = users.findAll(filter, request);
+        //debido a que los campos de friends e email no se verán, los ponemos a null
         for (User u : result) {
             u.setFriends(null).setEmail(null);
         }

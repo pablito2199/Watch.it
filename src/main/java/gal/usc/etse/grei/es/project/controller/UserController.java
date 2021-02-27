@@ -1,6 +1,6 @@
 package gal.usc.etse.grei.es.project.controller;
 
-import gal.usc.etse.grei.es.project.model.Movie;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +141,7 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el email que modificar, y el body con el objeto
-    ResponseEntity<Movie> put(@PathVariable("id") String email, @RequestBody User user) {
+    ResponseEntity<Film> put(@PathVariable("id") String email, @RequestBody User user) {
         //si el email existe, y si los nuevos email y aniversario coinciden, pues no se pueden modificar, modificamos
         if (users.get(email).isPresent())
             if (users.get(email).get().getBirthday().equals(user.getBirthday()) &&
@@ -159,8 +159,8 @@ public class UserController {
                     return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
             } else {
-                //devolvemos código de error 403, pues no se pueden modificar dichos campos
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+                return ResponseEntity.badRequest().build();
         } else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
