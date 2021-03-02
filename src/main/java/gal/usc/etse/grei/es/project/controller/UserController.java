@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -76,29 +77,21 @@ public class UserController {
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    ResponseEntity<User> insert(@RequestBody User user) {
-        //debe tener el email, nombre y aniversario obligatoriamente
-        if (user.getEmail() != null && user.getName() != null && user.getBirthday() != null) {
-            if (checkFriends(user.getFriends()) == 0) {
-                if (!users.get(user.getEmail()).isPresent()) {
-                    //insertamos el usuario correspondiente
-                    users.insert(user);
-                    //devolvemos código de error 200 al ir todo bien
-                    return ResponseEntity.ok().build();
-                } else {
-                    //devolvemos código de error 409 al ir haber un conflicto, pues ya existe un usuario con ese correo
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
-                }
-            } else if (checkFriends(user.getFriends()) == 1) {
-                //devolvemos código de error 404 al producirse un error de búsqueda
-                return ResponseEntity.notFound().build();
+    ResponseEntity<User> insert(@RequestBody @Valid User user) {
+        if (checkFriends(user.getFriends()) == 0) {
+            if (!users.get(user.getEmail()).isPresent()) {
+                //devolvemos el usuario insertado
+                return ResponseEntity.of(users.insert(user));
             } else {
-                //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+                //devolvemos código de error 409 al ir haber un conflicto, pues ya existe un usuario con ese correo
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
+        } else if (checkFriends(user.getFriends()) == 1) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
         } else {
-            //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
@@ -113,10 +106,8 @@ public class UserController {
             //debe tener el email, nombre y aniversario obligatoriamente
             if (friend.getEmail() != null && friend.getName() != null) {
                 if (checkFriend(email, friend) == 0) {
-                    //insertamos el usuario correspondiente
-                    users.addFriend(email, friend);
-                    //devolvemos código de error 200 al ir todo bien
-                    return ResponseEntity.ok().build();
+                    //devolvemos el usuario con su nuevo amigo
+                    return ResponseEntity.of(users.addFriend(email, friend));
                 } else if (checkFriend(email, friend) == 1) {
                     //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
                     return ResponseEntity.badRequest().build();
@@ -141,16 +132,14 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el email que modificar, y el body con el objeto
-    ResponseEntity<Film> put(@PathVariable("id") String email, @RequestBody User user) {
+    ResponseEntity<User> put(@PathVariable("id") String email, @RequestBody User user) {
         //si el email existe, y si los nuevos email y aniversario coinciden, pues no se pueden modificar, modificamos
         if (users.get(email).isPresent())
             if (users.get(email).get().getBirthday().equals(user.getBirthday()) &&
-                users.get(email).get().getEmail().equals(user.getEmail())) {
+                    users.get(email).get().getEmail().equals(user.getEmail())) {
                 if (checkFriends(user.getFriends()) == 0) {
-                    //modificamos el usuario correspondiente
-                    users.put(user);
-                    //devolvemos código de error 200 al ir todo bien
-                    return ResponseEntity.ok().build();
+                    //devolvemos el usuario modificado
+                    return ResponseEntity.of(users.put(user));
                 } else if (checkFriends(user.getFriends()) == 1) {
                     //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
                     return ResponseEntity.badRequest().build();
@@ -161,7 +150,8 @@ public class UserController {
             } else {
                 //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
                 return ResponseEntity.badRequest().build();
-        } else {
+            }
+        else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }

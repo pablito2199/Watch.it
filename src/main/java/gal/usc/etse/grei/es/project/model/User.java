@@ -1,9 +1,13 @@
 package gal.usc.etse.grei.es.project.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -12,10 +16,13 @@ import java.util.StringJoiner;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class User {
     @Id
+    @NotBlank(message = "The email field can not be empty")
     private String email;
+    @NotBlank(message = "The name field can not be empty")
     private String name;
     private String country;
     private String picture;
+    @NotNull(message = "The birthday field can not be empty")
     private Date birthday;
     private List<User> friends;
 

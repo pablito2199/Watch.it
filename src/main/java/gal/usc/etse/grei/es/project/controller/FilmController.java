@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -84,17 +85,9 @@ public class FilmController {
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    ResponseEntity<Film> insert(@RequestBody Film film) {
-        //debe tener el título obligatoriamente
-        if (film.getTitle() != null) {
-            //insertamos la película correspondiente
-            films.insert(film);
-            //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.ok().build();
-        } else {
-            //devolvemos código de error 400 al intentar añadir una película sin título
-            return ResponseEntity.badRequest().build();
-        }
+    ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
+        //devolvemos la película insertada
+        return ResponseEntity.of(films.insert(film));
     }
 
     //método PUT para modificar una película
@@ -107,9 +100,8 @@ public class FilmController {
     ResponseEntity<Film> put(@PathVariable("id") String id, @RequestBody Film film) {
         //si el id existe, modificamos
         if (films.get(id).isPresent()) {
-            films.put(film);
-            //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.ok().build();
+            //devolvemos la película modificada
+            return ResponseEntity.of(films.put(film));
         } else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();

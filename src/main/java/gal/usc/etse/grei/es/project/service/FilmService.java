@@ -37,13 +37,13 @@ public class FilmService {
     }
 
     //inserta la película
-    public void insert(Film film) {
-        films.insert(film);
+    public Optional<Film> insert(Film film) {
+        return Optional.of(films.insert(film));
     }
 
     //modifica la película
-    public void put(Film film) {
-        films.save(film);
+    public Optional<Film> put(Film film) {
+        return Optional.of(films.save(film));
     }
 
     //elimina la película con el id correspondiente

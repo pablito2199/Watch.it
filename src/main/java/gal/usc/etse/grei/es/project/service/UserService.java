@@ -45,23 +45,23 @@ public class UserService {
     }
 
     //inserta el usuario
-    public void insert(User user) {
-        users.insert(user);
+    public Optional<User> insert(User user) {
+        return Optional.of(users.insert(user));
     }
 
     //añade el amigo al usuario
-    public void addFriend(String email, User user) {
+    public Optional<User> addFriend(String email, User user) {
         //buscamos los amigos del usuario
         List<User> friends = users.findById(email).get().getFriends();
         //añadimos el amigo
         friends.add(user);
         //guardamos la lista modificada de amigos
-        users.save(users.findById(email).get().setFriends(friends));
+        return Optional.of(users.save(users.findById(email).get().setFriends(friends)));
     }
 
     //modifica el usuario
-    public void put(User user) {
-        users.save(user);
+    public Optional<User> put(User user) {
+        return Optional.of(users.save(user));
     }
 
     //elimina el usuario con el email correspondiente
