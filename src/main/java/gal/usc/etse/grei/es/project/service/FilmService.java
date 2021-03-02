@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,9 +26,13 @@ public class FilmService {
     }
 
     //devuelve la lista de películas paginadas
-    public Optional<Page<Film>> get(int page, int size, Sort sort, Date date) {
+    public Optional<Page<Film>> get(int page, int size, Sort sort, List<String> keywords, List<String> genres,
+                                    List<String> producers, List<String> crew, List<String> cast, Date releasedate) {
         Pageable request = PageRequest.of(page, size, sort);
-        Example<Film> filter = Example.of(new Film().setReleaseDate(date));
+        //el filtro deberá contener lo especificado debido al "CONTAINS" de los Strings
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        //buscamos las películas según los filtros
+        Example<Film> filter = Example.of(new Film().setReleaseDate(releasedate), matcher);
         Page<Film> result = films.findAll(filter, request);
 
         if (result.isEmpty())

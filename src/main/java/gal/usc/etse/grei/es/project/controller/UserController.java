@@ -169,7 +169,7 @@ public class UserController {
             //eliminamos el usuario
             users.delete(email);
             //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
@@ -189,7 +189,7 @@ public class UserController {
         if (friendExists(user1, user2.getEmail())) {
             users.deleteFriend(user1, user2.getEmail());
             //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();

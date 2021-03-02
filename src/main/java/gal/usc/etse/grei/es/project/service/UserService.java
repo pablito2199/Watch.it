@@ -53,8 +53,8 @@ public class UserService {
     public Optional<User> addFriend(String email, User user) {
         //buscamos los amigos del usuario
         List<User> friends = users.findById(email).get().getFriends();
-        //añadimos el amigo
-        friends.add(user);
+        //añadimos el amigo solo con los campos de email y nombre
+        friends.add(new User().setEmail(user.getEmail()).setName(user.getName()));
         //guardamos la lista modificada de amigos
         return Optional.of(users.save(users.findById(email).get().setFriends(friends)));
     }

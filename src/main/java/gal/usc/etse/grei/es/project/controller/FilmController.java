@@ -1,10 +1,7 @@
 package gal.usc.etse.grei.es.project.controller;
 
-import gal.usc.etse.grei.es.project.model.Cast;
-import gal.usc.etse.grei.es.project.model.Crew;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.model.Film;
-import gal.usc.etse.grei.es.project.model.Producer;
 import gal.usc.etse.grei.es.project.service.FilmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -55,9 +52,9 @@ public class FilmController {
             @RequestParam(name = "sort", defaultValue = "") List<String> sort,
             @RequestParam(name = "keywords", required = false) List<String> keywords,
             @RequestParam(name = "genres", required = false) List<String> genres,
-            @RequestParam(name = "producers", required = false) List<Producer> producers,
-            @RequestParam(name = "crew", required = false) List<Crew> crew,
-            @RequestParam(name = "cast", required = false) List<Cast> cast,
+            @RequestParam(name = "producers", required = false) List<String> producers,
+            @RequestParam(name = "crew", required = false) List<String> crew,
+            @RequestParam(name = "cast", required = false) List<String> cast,
             @RequestParam(name = "day", required = false) Integer day,
             @RequestParam(name = "month", required = false) Integer month,
             @RequestParam(name = "year", required = false) Integer year
@@ -77,7 +74,8 @@ public class FilmController {
 
         Date releaseDate = new Date(day, month, year);
         //devolvemos los usuarios obtenidos
-        return ResponseEntity.of(films.get(page, size, Sort.by(criteria), releaseDate));
+        return ResponseEntity.of(films.get(page, size, Sort.by(criteria),
+                keywords, genres, producers, crew, cast, releaseDate));
     }
 
     //método POST al crear una nueva película
@@ -120,7 +118,7 @@ public class FilmController {
             //eliminamos la película
             films.delete(id);
             //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
