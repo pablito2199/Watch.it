@@ -107,6 +107,8 @@ public class FilmController {
             //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
             if (films.get(assessment.getFilm().getId()).isPresent() &&
                     users.get(assessment.getUser().getEmail()).isPresent()) {
+                assessment.getFilm().setTitle(films.get((assessment.getFilm().getId())).get().getTitle());
+                assessment.getUser().setName(users.get((assessment.getUser().getEmail())).get().getName());
                 //devolvemos la valoración insertada
                 return ResponseEntity.of(assessments.insert(assessment));
             } else {
@@ -137,6 +139,40 @@ public class FilmController {
         }
     }
 
+    //método PUT para modificar una valoración
+    //link al servicio en films/assessments/{id}, consumes, pues necesita los datos del body
+    @PutMapping(
+            path = "assessments/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
+    ResponseEntity<Assessment> put(@PathVariable("id") String id, @RequestBody Assessment assessment) {
+        //si el id existe, modificamos
+        if (assessments.get(id).isPresent()) {
+            //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
+            if (assessment.getFilm().getId() != null && assessment.getUser().getEmail() != null) {
+                //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
+                if (films.get(assessment.getFilm().getId()).isPresent() &&
+                        users.get(assessment.getUser().getEmail()).isPresent()) {
+                    assessment.setId(id);
+                    assessment.getFilm().setTitle(films.get((assessment.getFilm().getId())).get().getTitle());
+                    assessment.getUser().setName(users.get((assessment.getUser().getEmail())).get().getName());
+                    //devolvemos la valoración insertada
+                    return ResponseEntity.of(assessments.put(assessment));
+                } else {
+                    //devolvemos código de error 404 al producirse un error de búsqueda
+                    return ResponseEntity.notFound().build();
+                }
+            } else {
+                //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
+                return ResponseEntity.badRequest().build();
+            }
+        } else {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     //método DELETE para eliminar una película
     //link al servicio en films/{id}
     @DeleteMapping(
@@ -148,6 +184,25 @@ public class FilmController {
         if (films.get(id).isPresent()) {
             //eliminamos la película
             films.delete(id);
+            //devolvemos código de error 200 al ir todo bien
+            return ResponseEntity.noContent().build();
+        } else {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    //método DELETE para eliminar una valoración
+    //link al servicio en films/assessments/{id}
+    @DeleteMapping(
+            path = "assessments/{id}"
+    )
+    //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
+    ResponseEntity<Assessment> deleteAssessment(@PathVariable("id") String id) {
+        //si la valoración existe, podremos eliminar la valoración
+        if (assessments.get(id).isPresent()) {
+            //eliminamos la valoración
+            assessments.delete(id);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.noContent().build();
         } else {
