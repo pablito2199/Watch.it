@@ -134,7 +134,7 @@ public class UserController {
     //recoge la variable del id, pues necesita buscar el email que modificar, y el body con el objeto
     ResponseEntity<User> put(@PathVariable("id") String email, @RequestBody User user) {
         //si el email existe, y si los nuevos email y aniversario coinciden, pues no se pueden modificar, modificamos
-        if (users.get(email).isPresent())
+        if (users.get(email).isPresent()) {
             if (users.get(email).get().getBirthday().equals(user.getBirthday()) &&
                     users.get(email).get().getEmail().equals(user.getEmail())) {
                 if (checkFriends(user.getFriends()) == 0) {
@@ -151,7 +151,7 @@ public class UserController {
                 //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
                 return ResponseEntity.badRequest().build();
             }
-        else {
+        } else {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
@@ -176,7 +176,7 @@ public class UserController {
         }
     }
 
-    //método DELETE para eliminar un usuario
+    //método DELETE para eliminar un amigo
     //link al servicio en users/{id}
     @DeleteMapping(
             path = "{id}",
