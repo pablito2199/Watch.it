@@ -69,7 +69,7 @@ public class FilmService {
             return Optional.empty();
         else
             return Optional.of(PageableExecutionUtils.getPage(result, request,
-                    ()->mongo.count(Query.query(criteria), Film.class)));
+                    () -> mongo.count(Query.query(criteria), Film.class)));
     }
 
     //inserta la película

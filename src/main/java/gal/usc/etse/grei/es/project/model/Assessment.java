@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -12,8 +13,11 @@ import java.util.StringJoiner;
 public class Assessment {
     @Id
     private String id;
+    @NotNull(message = "The rating field can not be empty")
     private Integer rating;
+    @NotNull(message = "The user field can not be empty")
     private User user;
+    @NotNull(message = "The film field can not be empty")
     private Film film;
     private String comment;
 

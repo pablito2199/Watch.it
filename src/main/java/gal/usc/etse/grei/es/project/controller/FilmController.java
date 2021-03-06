@@ -1,8 +1,11 @@
 package gal.usc.etse.grei.es.project.controller;
 
+import gal.usc.etse.grei.es.project.model.Assessment;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.model.Film;
+import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FilmService;
+import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -19,12 +22,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("films")
 public class FilmController {
+    private final AssessmentService assessments;
     private final FilmService films;
+    private final UserService users;
 
     //Instancia
     @Autowired
-    public FilmController(FilmService films) {
+    public FilmController(AssessmentService assessments, FilmService films, UserService users) {
+        this.assessments = assessments;
         this.films = films;
+        this.users = users;
     }
 
     //método GET al recuperar una película
@@ -86,6 +93,30 @@ public class FilmController {
     ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
         //devolvemos la película insertada
         return ResponseEntity.of(films.insert(film));
+    }
+
+    //método POST al crear una nueva valoración sobre una película
+    //consumes, pues necesita los datos del body
+    @PostMapping(
+            path = "assessments",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<Assessment> insert(@RequestBody @Valid Assessment assessment) {
+        //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
+        if (assessment.getFilm().getId() != null && assessment.getUser().getEmail() != null) {
+            //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
+            if (films.get(assessment.getFilm().getId()).isPresent() &&
+                    users.get(assessment.getUser().getEmail()).isPresent()) {
+                //devolvemos la valoración insertada
+                return ResponseEntity.of(assessments.insert(assessment));
+            } else {
+                //devolvemos código de error 404 al producirse un error de búsqueda
+                return ResponseEntity.notFound().build();
+            }
+        } else {
+            //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     //método PUT para modificar una película
