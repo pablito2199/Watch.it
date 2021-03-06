@@ -26,7 +26,7 @@ public class FilmController {
     private final FilmService films;
     private final UserService users;
 
-    //Instancia
+    //Instancias
     @Autowired
     public FilmController(AssessmentService assessments, FilmService films, UserService users) {
         this.assessments = assessments;
@@ -85,6 +85,26 @@ public class FilmController {
                 keywords, genres, producers, crew, cast, releaseDate));
     }
 
+    //método GET al recuperar valoraciones de una película
+    //link al servicio en films/assessments, produces lo que devuelve
+    @GetMapping(
+            path = "assessments",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<List<Assessment>> getAssessmentsFilm(
+            //parámetro a continuación de la interrogación para el filtrado
+            @RequestParam(name = "film") String film
+    ) {
+        //si la película existe, permitimos obtener sus valoraciones
+        if (films.get(film).isPresent()) {
+            //devolvemos las valoraciones obtenidos
+            return ResponseEntity.of(assessments.getAssessmentsFilm(film));
+        } else {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     //método POST al crear una nueva película
     //consumes, pues necesita los datos del body
     @PostMapping(
@@ -101,14 +121,12 @@ public class FilmController {
             path = "assessments",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    ResponseEntity<Assessment> insert(@RequestBody @Valid Assessment assessment) {
+    ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
         //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
         if (assessment.getFilm().getId() != null && assessment.getUser().getEmail() != null) {
             //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
             if (films.get(assessment.getFilm().getId()).isPresent() &&
                     users.get(assessment.getUser().getEmail()).isPresent()) {
-                assessment.getFilm().setTitle(films.get((assessment.getFilm().getId())).get().getTitle());
-                assessment.getUser().setName(users.get((assessment.getUser().getEmail())).get().getName());
                 //devolvemos la valoración insertada
                 return ResponseEntity.of(assessments.insert(assessment));
             } else {
@@ -146,7 +164,7 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<Assessment> put(@PathVariable("id") String id, @RequestBody Assessment assessment) {
+    ResponseEntity<Assessment> putAssessment(@PathVariable("id") String id, @RequestBody Assessment assessment) {
         //si el id existe, modificamos
         if (assessments.get(id).isPresent()) {
             //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
@@ -154,11 +172,8 @@ public class FilmController {
                 //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
                 if (films.get(assessment.getFilm().getId()).isPresent() &&
                         users.get(assessment.getUser().getEmail()).isPresent()) {
-                    assessment.setId(id);
-                    assessment.getFilm().setTitle(films.get((assessment.getFilm().getId())).get().getTitle());
-                    assessment.getUser().setName(users.get((assessment.getUser().getEmail())).get().getName());
                     //devolvemos la valoración insertada
-                    return ResponseEntity.of(assessments.put(assessment));
+                    return ResponseEntity.of(assessments.put(id, assessment));
                 } else {
                     //devolvemos código de error 404 al producirse un error de búsqueda
                     return ResponseEntity.notFound().build();

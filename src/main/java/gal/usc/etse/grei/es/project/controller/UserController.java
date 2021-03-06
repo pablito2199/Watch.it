@@ -1,7 +1,8 @@
 package gal.usc.etse.grei.es.project.controller;
 
-import gal.usc.etse.grei.es.project.model.Film;
+import gal.usc.etse.grei.es.project.model.Assessment;
 import gal.usc.etse.grei.es.project.model.User;
+import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,11 +21,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("users")
 public class UserController {
+    private final AssessmentService assessments;
     private final UserService users;
 
-    //Instancia
+    //Instancias
     @Autowired
-    public UserController(UserService users) {
+    public UserController(AssessmentService assessments, UserService users) {
+        this.assessments = assessments;
         this.users = users;
     }
 
@@ -70,6 +73,26 @@ public class UserController {
 
         //devolvemos los usuarios obtenidos
         return ResponseEntity.of(users.get(page, size, Sort.by(criteria), email, name));
+    }
+
+    //método GET al recuperar valoraciones de un usuario
+    //link al servicio en users/assessments, produces lo que devuelve
+    @GetMapping(
+            path = "assessments",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<List<Assessment>> getAssessmentsUser(
+            //parámetro a continuación de la interrogación para el filtrado
+            @RequestParam(name = "user") String user
+    ) {
+        //si el usuario existe, permitimos obtener sus valoraciones
+        if (users.get(user).isPresent()) {
+            //devolvemos las valoraciones obtenidos
+            return ResponseEntity.of(assessments.getAssessmentsUser(user));
+        } else {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
     }
 
     //método POST al crear un nuevo usuario
