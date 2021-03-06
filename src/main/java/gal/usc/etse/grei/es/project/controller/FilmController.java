@@ -127,8 +127,14 @@ public class FilmController {
             //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
             if (films.get(assessment.getFilm().getId()).isPresent() &&
                     users.get(assessment.getUser().getEmail()).isPresent()) {
-                //devolvemos la valoración insertada
-                return ResponseEntity.of(assessments.insert(assessment));
+                //si el usuario no ha realizado una valoración sobre la película, permitimos insertar
+                if (!assessments.getAssessments(assessment.getFilm().getId(), assessment.getUser().getEmail()).isPresent()) {
+                    //devolvemos la valoración insertada
+                    return ResponseEntity.of(assessments.insert(assessment));
+                } else {
+                    //devolvemos código de error 400 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
+                    return ResponseEntity.badRequest().build();
+                }
             } else {
                 //devolvemos código de error 404 al producirse un error de búsqueda
                 return ResponseEntity.notFound().build();

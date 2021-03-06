@@ -33,6 +33,19 @@ public class AssessmentService {
     }
 
     //devuelve las valoraciones de la película correspondiente
+    public Optional<List<Assessment>> getAssessments(String film, String user) {
+        Criteria criteria = Criteria.where("_id").exists(true);
+        criteria.and("film._id").is(film);
+        criteria.and("user._id").is(user);
+        Query query = Query.query(criteria);
+        List<Assessment> result = mongo.find(query, Assessment.class);
+        if (result.isEmpty())
+            return Optional.empty();
+        else
+            return Optional.of(result);
+    }
+
+    //devuelve las valoraciones de la película correspondiente
     public Optional<List<Assessment>> getAssessmentsFilm(String film) {
         Criteria criteria = Criteria.where("_id").exists(true);
         criteria.and("film._id").is(film);
