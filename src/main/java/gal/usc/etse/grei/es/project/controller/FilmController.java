@@ -100,10 +100,9 @@ public class FilmController {
         if (films.get(film).isPresent()) {
             //devolvemos las valoraciones obtenidos
             return ResponseEntity.of(assessments.getAssessmentsFilm(film));
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método POST al crear una nueva película
@@ -132,18 +131,15 @@ public class FilmController {
                 if (!assessments.getAssessments(assessment.getFilm().getId(), assessment.getUser().getEmail()).isPresent()) {
                     //devolvemos la valoración insertada
                     return ResponseEntity.of(assessments.insert(assessment));
-                } else {
-                    //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
-            } else {
-                //devolvemos código de error 404 al producirse un error de búsqueda
-                return ResponseEntity.notFound().build();
+                //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
-        } else {
-            //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
+        return ResponseEntity.badRequest().build();
     }
 
     //método PUT para modificar una película
@@ -158,10 +154,9 @@ public class FilmController {
         if (films.get(id).isPresent()) {
             //devolvemos la película modificada
             return ResponseEntity.of(films.put(film));
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método PUT para modificar una valoración
@@ -182,22 +177,18 @@ public class FilmController {
                     if (users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
                         //devolvemos la valoración insertada
                         return ResponseEntity.of(assessments.put(id, assessment));
-                    } else {
-                        //devolvemos código de error 400 al intentar añadir cambiando el usuario
-                        return ResponseEntity.badRequest().build();
                     }
-                } else {
-                    //devolvemos código de error 404 al producirse un error de búsqueda
-                    return ResponseEntity.notFound().build();
+                    //devolvemos código de error 400 al intentar añadir cambiando el usuario
+                    return ResponseEntity.badRequest().build();
                 }
-            } else {
-                //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
-                return ResponseEntity.badRequest().build();
+                //devolvemos código de error 404 al producirse un error de búsqueda
+                return ResponseEntity.notFound().build();
             }
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
+            return ResponseEntity.badRequest().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método DELETE para eliminar una película
@@ -213,10 +204,9 @@ public class FilmController {
             films.delete(id);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.noContent().build();
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método DELETE para eliminar una valoración
@@ -232,9 +222,8 @@ public class FilmController {
             assessments.delete(id);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.noContent().build();
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 }
