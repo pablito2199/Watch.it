@@ -71,10 +71,14 @@ public class AssessmentService {
 
     //inserta la valoración
     public Optional<Assessment> insert(Assessment assessment) {
-        //indicamos el título de la película
-        assessment.getFilm().setTitle(films.get((assessment.getFilm().getId())).get().getTitle());
-        //indicamos el nombre del usuario
-        assessment.getUser().setName(users.get((assessment.getUser().getEmail())).get().getName());
+        //si la película está presente en la base de datos, indicamos el título de la película
+        if (films.get(assessment.getFilm().getId()).isPresent()) {
+            assessment.getFilm().setTitle(films.get(assessment.getFilm().getId()).get().getTitle());
+        }
+        //si el usuario está presente en la base de datos, indicamos el nombre del usuario
+        if (users.get(assessment.getUser().getEmail()).isPresent()) {
+            assessment.getUser().setName(users.get(assessment.getUser().getEmail()).get().getName());
+        }
         return Optional.of(assessments.insert(assessment));
     }
 
@@ -82,10 +86,14 @@ public class AssessmentService {
     public Optional<Assessment> put(String id, Assessment assessment) {
         //indicamos el id a modificar
         assessment.setId(id);
-        //indicamos el título de la película
-        assessment.getFilm().setTitle(films.get((assessment.getFilm().getId())).get().getTitle());
-        //indicamos el nombre del usuario
-        assessment.getUser().setName(users.get((assessment.getUser().getEmail())).get().getName());
+        //si la película está presente en la base de datos, indicamos el título de la película
+        if (films.get(assessment.getFilm().getId()).isPresent()) {
+            assessment.getFilm().setTitle(films.get(assessment.getFilm().getId()).get().getTitle());
+        }
+        //si el usuario está presente en la base de datos, indicamos el nombre del usuario
+        if (users.get(assessment.getUser().getEmail()).isPresent()) {
+            assessment.getUser().setName(users.get(assessment.getUser().getEmail()).get().getName());
+        }
         return Optional.of(assessments.save(assessment));
     }
 

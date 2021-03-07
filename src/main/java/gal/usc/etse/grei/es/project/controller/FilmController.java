@@ -9,6 +9,7 @@ import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -132,8 +133,8 @@ public class FilmController {
                     //devolvemos la valoración insertada
                     return ResponseEntity.of(assessments.insert(assessment));
                 } else {
-                    //devolvemos código de error 400 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
-                    return ResponseEntity.badRequest().build();
+                    //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
+                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
             } else {
                 //devolvemos código de error 404 al producirse un error de búsqueda
@@ -170,7 +171,7 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<Assessment> putAssessment(@PathVariable("id") String id, @RequestBody Assessment assessment) {
+    ResponseEntity<Assessment> putAssessment(@PathVariable("id") String id, @RequestBody @Valid Assessment assessment) {
         //si el id existe, modificamos
         if (assessments.get(id).isPresent()) {
             //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
@@ -178,8 +179,13 @@ public class FilmController {
                 //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
                 if (films.get(assessment.getFilm().getId()).isPresent() &&
                         users.get(assessment.getUser().getEmail()).isPresent()) {
-                    //devolvemos la valoración insertada
-                    return ResponseEntity.of(assessments.put(id, assessment));
+                    if (users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
+                        //devolvemos la valoración insertada
+                        return ResponseEntity.of(assessments.put(id, assessment));
+                    } else {
+                        //devolvemos código de error 400 al intentar añadir cambiando el usuario
+                        return ResponseEntity.badRequest().build();
+                    }
                 } else {
                     //devolvemos código de error 404 al producirse un error de búsqueda
                     return ResponseEntity.notFound().build();
