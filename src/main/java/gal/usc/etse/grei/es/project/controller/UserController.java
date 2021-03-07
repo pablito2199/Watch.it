@@ -101,6 +101,7 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<User> insert(@RequestBody @Valid User user) {
+        //comprobamos que los amigos se añadan de forma correcta
         if (checkFriends(user.getFriends()) == 0) {
             if (!users.get(user.getEmail()).isPresent()) {
                 //devolvemos el usuario insertado
@@ -165,7 +166,7 @@ public class UserController {
                     return ResponseEntity.of(users.put(user));
                 } else if (checkFriends(user.getFriends()) == 1) {
                     //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
-                    return ResponseEntity.badRequest().build();
+                    return ResponseEntity.notFound().build();
                 } else {
                     //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
                     return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -225,41 +226,27 @@ public class UserController {
         if (friend.getEmail() == null || friend.getName() == null) {
             return 1;
         }
-        //comprobamos que el usuario coincide con uno existente en la base de datos
-        if (friend.getEmail().equals(users.get(friend.getEmail()).get().getEmail()) &&
-                friend.getName().equals(users.get(friend.getEmail()).get().getName())) {
-            //comprobamos si existe algún amigo
-            for (User us1 : users.get(user).get().getFriends()) {
-                //si existe algún usuario con ese email en amigos, no se introducirá
-                if (us1.getEmail().equals(friend.getEmail())) {
-                    return 2;
-                }
-            }
-            return 0;
-        } else {
-            return 1;
-        }
-    }
-
-    //comprobamos que los amigos cumplan los requisitos necesarios
-    private Integer checkFriends(List<User> friends) {
-        //para cada amigo introducido
-        for (User u : friends) {
-            //comprobamos que este tenga email y nombre
-            if (u.getEmail() == null || u.getName() == null) {
-                return 1;
-            }
+        //si el usuario está presente en la base de datos
+        if (users.get(friend.getEmail()).isPresent()) {
             //comprobamos que el usuario coincide con uno existente en la base de datos
-            if (u.getEmail().equals(users.get(u.getEmail()).get().getEmail()) &&
-                    u.getName().equals(users.get(u.getEmail()).get().getName())) {
-                //comprobamos si existe algún amigo
-                for (User us : users.get(u.getEmail()).get().getFriends()) {
-                    //si existe algún usuario con ese email en amigos, no se introducirá
-                    if (us.getEmail().equals(u.getEmail())) {
-                        return 2;
+            if (friend.getEmail().equals(users.get(friend.getEmail()).get().getEmail()) &&
+                    friend.getName().equals(users.get(friend.getEmail()).get().getName())) {
+                //si el usuario está presente en la base de datos
+                if (users.get(user).isPresent()) {
+                    //si existe algún amigo, comprobamos
+                    if (users.getFriends(user).isPresent()) {
+                        //si tiene algun amigo, comprobamos
+                        if (users.getFriends(user).get().getFriends() != null) {
+                            //comprobamos si existe algún amigo
+                            for (User us1 : users.getFriends(user).get().getFriends()) {
+                                //si existe algún usuario con ese email en amigos, no se introducirá
+                                if (us1.getEmail().equals(friend.getEmail())) {
+                                    return 2;
+                                }
+                            }
+                        }
                     }
                 }
-                return 0;
             } else {
                 return 1;
             }
@@ -267,13 +254,60 @@ public class UserController {
         return 0;
     }
 
-    //comprobamos que el amigo se encuentra en la lista de amigos
-    private boolean friendExists(String user1, String user2) {
-        for (User u : users.get(user1).get().getFriends()) {
-            if (u.getEmail().equals(user2)) {
-                return true;
+    //comprobamos que los amigos cumplan los requisitos necesarios
+    private Integer checkFriends(List<User> friends) {
+        if (friends != null) {
+            //para cada amigo introducido
+            for (User u : friends) {
+                //comprobamos que este tenga email y nombre
+                if (u.getEmail() == null || u.getName() == null) {
+                    return 1;
+                }
+                //si existe el amigo está presente en la base de datos en la base de datos
+                if (users.get(u.getEmail()).isPresent()) {
+                    //comprobamos que el usuario coincide con uno existente en la base de datos
+                    if (u.getEmail().equals(users.get(u.getEmail()).get().getEmail()) &&
+                            u.getName().equals(users.get(u.getEmail()).get().getName())) {
+                        //si existe algún amigo, comprobamos
+                        if (users.getFriends(u.getEmail()).isPresent()) {
+                            //si tiene amigos, comprobamos
+                            if (users.getFriends(u.getEmail()).get().getFriends() != null) {
+                                //comprobamos si existe algún amigo
+                                for (User us : users.getFriends(u.getEmail()).get().getFriends()) {
+                                    //si existe algún usuario con ese email en amigos, no se introducirá
+                                    if (us.getEmail().equals(u.getEmail())) {
+                                        return 2;
+                                    }
+                                }
+                                return 0;
+                            }
+                        }
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    return 1;
+                }
             }
         }
+        return 0;
+    }
+
+    //comprobamos que el amigo se encuentra en la lista de amigos
+    private boolean friendExists(String user1, String user2) {
+        //si existe algún usuario
+        if (users.get(user1).isPresent()) {
+            //si tiene amigos, comprobamos
+            if (users.getFriends(user1).isPresent()) {
+                for (User u : users.getFriends(user1).get().getFriends()) {
+                    if (u.getEmail().equals(user2)) {
+                        //si tiene el amigo, devolvemos true
+                        return true;
+                    }
+                }
+            }
+        }
+        //el amigo no existe
         return false;
     }
 }

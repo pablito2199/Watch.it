@@ -21,6 +21,22 @@ public class UserService {
 
     //devuelve el usuario con el email correspondiente
     public Optional<User> get(String email) {
+        //guardamos el usuario
+        Optional<User> user = users.findById(email);
+        //si el usuario está presente en la base de datos
+        if (user.isPresent()) {
+            //si no tiene amigos, no mostraremos el campo friends
+            if (user.get().getFriends() != null) {
+                user.get().setFriends(null);
+            }
+        }
+        //devolvemos el usuario
+        return user;
+    }
+
+    //devuelve el usuario con el email correspondiente
+    public Optional<User> getFriends(String email) {
+        //devolvemos el usuario
         return users.findById(email);
     }
 
@@ -46,21 +62,44 @@ public class UserService {
 
     //inserta el usuario
     public Optional<User> insert(User user) {
+        //si tiene algun amigo
+        if (user.getFriends() != null) {
+            //guardamos la lista de amigos
+            List<User> friends = user.getFriends();
+            //mostraremos solo email y nombre
+            for (User f : friends) {
+                f.setFriends(null).setBirthday(null).setCountry(null).setPicture(null);
+            }
+        }
+        //devolvemos el usuario
         return Optional.of(users.insert(user));
     }
 
     //añade el amigo al usuario
     public Optional<User> addFriend(String email, User user) {
-        //buscamos los amigos del usuario
-        List<User> friends = users.findById(email).get().getFriends();
-        //añadimos el amigo solo con los campos de email y nombre
-        friends.add(new User().setEmail(user.getEmail()).setName(user.getName()));
-        //guardamos la lista modificada de amigos
-        return Optional.of(users.save(users.findById(email).get().setFriends(friends)));
+        //si el usuario está presente, añadiremos el amigo
+        if (users.findById(email).isPresent()) {
+            //buscamos los amigos del usuario
+            List<User> friends = users.findById(email).get().getFriends();
+            //añadimos el amigo solo con los campos de email y nombre
+            friends.add(new User().setEmail(user.getEmail()).setName(user.getName()));
+            //guardamos la lista modificada de amigos
+            return Optional.of(users.save(users.findById(email).get().setFriends(friends)));
+        }
+        return Optional.empty();
     }
 
     //modifica el usuario
     public Optional<User> put(User user) {
+        //si tiene algún amigo
+        if (user.getFriends() != null) {
+            //guardamos la lista de amigos
+            List<User> friends = user.getFriends();
+            //mostraremos solo email y nombre
+            for (User f : friends) {
+                f.setFriends(null).setBirthday(null).setCountry(null).setPicture(null);
+            }
+        }
         return Optional.of(users.save(user));
     }
 
@@ -71,16 +110,19 @@ public class UserService {
 
     //elimina el amigo del usuario correspondiente
     public void deleteFriend(String user1, String user2) {
-        //buscamos los amigos del usuario
-        List<User> friends = users.findById(user1).get().getFriends();
-        for (User f : friends) {
-            if (f.getEmail().equals(user2)) {
-                //eliminamos el amigo y salimos del bucle
-                friends.remove(f);
-                break;
+        //si el usuario está presente, eliminaremos el amigo
+        if (users.findById(user1).isPresent()) {
+            List<User> friends = users.findById(user1).get().getFriends();
+            //buscamos los amigos del usuario
+            for (User f : users.findById(user1).get().getFriends()) {
+                if (f.getEmail().equals(user2)) {
+                    //eliminamos el amigo y salimos del bucle
+                    friends.remove(f);
+                    break;
+                }
             }
+            //guardamos la lista modificada de amigos
+            users.save(users.findById(user1).get().setFriends(friends));
         }
-        //guardamos la lista modificada de amigos
-        users.save(users.findById(user1).get().setFriends(friends));
     }
 }
