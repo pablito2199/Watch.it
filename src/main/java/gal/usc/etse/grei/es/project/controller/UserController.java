@@ -89,10 +89,9 @@ public class UserController {
         if (users.get(user).isPresent()) {
             //devolvemos las valoraciones obtenidos
             return ResponseEntity.of(assessments.getAssessmentsUser(user));
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método POST al crear un nuevo usuario
@@ -106,17 +105,15 @@ public class UserController {
             if (!users.get(user.getEmail()).isPresent()) {
                 //devolvemos el usuario insertado
                 return ResponseEntity.of(users.insert(user));
-            } else {
-                //devolvemos código de error 409 al ir haber un conflicto, pues ya existe un usuario con ese correo
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
+            //devolvemos código de error 409 al ir haber un conflicto, pues ya existe un usuario con ese correo
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } else if (checkFriends(user.getFriends()) == 1) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
-        } else {
-            //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+        //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
     //método POST al añadir un nuevo amigo
@@ -135,18 +132,15 @@ public class UserController {
                 } else if (checkFriend(email, friend) == 1) {
                     //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
                     return ResponseEntity.badRequest().build();
-                } else {
-                    //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
-            } else {
-                //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
-                return ResponseEntity.badRequest().build();
+                //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+            return ResponseEntity.badRequest().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método PUT para modificar un usuario
@@ -167,18 +161,15 @@ public class UserController {
                 } else if (checkFriends(user.getFriends()) == 1) {
                     //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
                     return ResponseEntity.notFound().build();
-                } else {
-                    //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
-                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 }
-            } else {
-                //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
-                return ResponseEntity.badRequest().build();
+                //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            //devolvemos código de error 400 al intentar añadir un usuario con campos especificados sin completar
+            return ResponseEntity.badRequest().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método DELETE para eliminar un usuario
@@ -194,10 +185,9 @@ public class UserController {
             users.delete(email);
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.noContent().build();
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //método DELETE para eliminar un amigo
@@ -214,10 +204,9 @@ public class UserController {
             users.deleteFriend(user1, user2.getEmail());
             //devolvemos código de error 200 al ir todo bien
             return ResponseEntity.noContent().build();
-        } else {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
         }
+        //devolvemos código de error 404 al producirse un error de búsqueda
+        return ResponseEntity.notFound().build();
     }
 
     //comprobamos que los amigos cumplan los requisitos necesarios
@@ -247,9 +236,8 @@ public class UserController {
                         }
                     }
                 }
-            } else {
-                return 1;
             }
+            return 1;
         }
         return 0;
     }
@@ -282,12 +270,10 @@ public class UserController {
                                 return 0;
                             }
                         }
-                    } else {
-                        return 1;
                     }
-                } else {
                     return 1;
                 }
+                return 1;
             }
         }
         return 0;
