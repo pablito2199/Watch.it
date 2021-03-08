@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,19 +24,16 @@ public class UserService {
     public Optional<User> get(String email) {
         //guardamos el usuario
         Optional<User> user = users.findById(email);
-        //si el usuario está presente en la base de datos
-        if (user.isPresent()) {
-            //si no tiene amigos, no mostraremos el campo friends
-            if (user.get().getFriends() != null) {
-                user.get().setFriends(null);
-            }
+        //si el usuario está presente en la base de datos, pero no tiene amigos, no se muestra el campo friends
+        if (user.isPresent() && user.get().getFriends() == null) {
+            user.get().setFriends(null);
         }
         //devolvemos el usuario
         return user;
     }
 
     //devuelve el usuario con el email correspondiente
-    public Optional<User> getFriends(String email) {
+    public Optional<User> getAllUserData(String email) {
         //devolvemos el usuario
         return users.findById(email);
     }
@@ -58,6 +56,22 @@ public class UserService {
             return Optional.empty();
 
         else return Optional.of(result);
+    }
+
+    //devuelve la lista de usuarios paginados
+    public List<String> getFriendsIds(String user) {
+        List<String> result = new ArrayList<>();
+        //guardamos el usuario que estamos buscando
+        Optional<User> objective = this.getAllUserData(user);
+        //si el usuario existe en la base de datos
+        if (objective.isPresent()) {
+            //añadimos la lista de amigos del usuario
+            for (User u : objective.get().getFriends()) {
+                result.add(u.getEmail());
+            }
+        }
+        //devolvemos la lista de ids de amigos existentes
+        return result;
     }
 
     //inserta el usuario

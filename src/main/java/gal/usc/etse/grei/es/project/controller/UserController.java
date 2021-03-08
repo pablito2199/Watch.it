@@ -127,12 +127,13 @@ public class UserController {
     )
     ResponseEntity<User> addFriend(@PathVariable("id") String email, @RequestBody User friend) {
         //si el amigo no se encuentra en la base de datos
-        if (!users.get(friend.getEmail()).isPresent()) {
+        if (!users.get(friend.getEmail()).isPresent() || !users.get(email).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
-        //si los campos de email y nombre son nulos
-        if (friend.getEmail() == null || friend.getName() == null) {
+        //si los campos de email y nombre son nulos, o se intenta añadir a si mismo como amigo
+        if (friend.getEmail() == null || friend.getName() == null ||
+            email.equals(friend.getEmail())) {
             //devolvemos código de error 400 al intentar añadir un amigos con campos especificados sin completar
             return ResponseEntity.badRequest().build();
         }
@@ -164,8 +165,8 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         //si se trata de modificar el aniversario o el email
-        if (users.get(email).get().getBirthday().equals(user.getBirthday()) &&
-                users.get(email).get().getEmail().equals(user.getEmail())) {
+        if (!users.get(email).get().getBirthday().equals(user.getBirthday()) ||
+                !users.get(email).get().getEmail().equals(user.getEmail())) {
             //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
             return ResponseEntity.badRequest().build();
         }
@@ -210,8 +211,8 @@ public class UserController {
     //recoge la variable del id, pues necesita buscar el email para eliminar el amigo de un usuario
     //que se encuetra en el @RequestBody
     ResponseEntity<User> deleteFriend(@PathVariable("id") String user1, @RequestBody User user2) {
-        //si el amigo existe
-        if (!friendExists(user1, user2.getEmail())) {
+        //si el usuario no se encuentra en la lista de amigos
+        if (!users.getFriendsIds(user1).contains(user2.getEmail())) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
@@ -235,11 +236,11 @@ public class UserController {
                 //si el usuario está presente en la base de datos
                 if (users.get(user).isPresent()) {
                     //si existe algún amigo, comprobamos
-                    if (users.getFriends(user).isPresent()) {
+                    if (users.getAllUserData(user).isPresent()) {
                         //si tiene algun amigo, comprobamos
-                        if (users.getFriends(user).get().getFriends() != null) {
+                        if (users.getAllUserData(user).get().getFriends() != null) {
                             //comprobamos si existe algún amigo
-                            for (User us1 : users.getFriends(user).get().getFriends()) {
+                            for (User us1 : users.getAllUserData(user).get().getFriends()) {
                                 //si existe algún usuario con ese email en amigos, no se introducirá
                                 if (us1.getEmail().equals(friend.getEmail())) {
                                     return 2;
@@ -247,6 +248,7 @@ public class UserController {
                             }
                         }
                     }
+                    return 0;
                 }
             }
             return 1;
@@ -269,11 +271,11 @@ public class UserController {
                     if (u.getEmail().equals(users.get(u.getEmail()).get().getEmail()) &&
                             u.getName().equals(users.get(u.getEmail()).get().getName())) {
                         //si existe algún amigo, comprobamos
-                        if (users.getFriends(u.getEmail()).isPresent()) {
+                        if (users.getAllUserData(u.getEmail()).isPresent()) {
                             //si tiene amigos, comprobamos
-                            if (users.getFriends(u.getEmail()).get().getFriends() != null) {
+                            if (users.getAllUserData(u.getEmail()).get().getFriends() != null) {
                                 //comprobamos si existe algún amigo
-                                for (User us : users.getFriends(u.getEmail()).get().getFriends()) {
+                                for (User us : users.getAllUserData(u.getEmail()).get().getFriends()) {
                                     //si existe algún usuario con ese email en amigos, no se introducirá
                                     if (us.getEmail().equals(u.getEmail())) {
                                         return 2;
@@ -288,23 +290,5 @@ public class UserController {
             }
         }
         return 0;
-    }
-
-    //comprobamos que el amigo se encuentra en la lista de amigos
-    private boolean friendExists(String user1, String user2) {
-        //si existe algún usuario
-        if (users.get(user1).isPresent()) {
-            //si tiene amigos, comprobamos
-            if (users.getFriends(user1).isPresent()) {
-                for (User u : users.getFriends(user1).get().getFriends()) {
-                    if (u.getEmail().equals(user2)) {
-                        //si tiene el amigo, devolvemos true
-                        return true;
-                    }
-                }
-            }
-        }
-        //el amigo no existe
-        return false;
     }
 }

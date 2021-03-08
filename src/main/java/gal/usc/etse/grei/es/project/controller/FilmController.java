@@ -179,7 +179,7 @@ public class FilmController {
             return ResponseEntity.notFound().build();
         }
         //si se intenta modificar el usuario que inserta la valoración
-        if (users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
+        if (!users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
             //devolvemos código de error 400 al intentar añadir cambiando el usuario
             return ResponseEntity.badRequest().build();
         }
