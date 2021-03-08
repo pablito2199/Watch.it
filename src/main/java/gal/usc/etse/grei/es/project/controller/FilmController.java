@@ -144,12 +144,14 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<Film> put(@PathVariable("id") String id, @RequestBody Film film) {
+    ResponseEntity<Film> put(@PathVariable("id") String id, @RequestBody @Valid Film film) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
+        //indicamos el id de la película a modificar
+        film.setId(id);
         //devolvemos la película modificada
         return ResponseEntity.of(films.put(film));
     }

@@ -133,7 +133,7 @@ public class UserController {
         }
         //si los campos de email y nombre son nulos, o se intenta añadir a si mismo como amigo
         if (friend.getEmail() == null || friend.getName() == null ||
-            email.equals(friend.getEmail())) {
+                email.equals(friend.getEmail())) {
             //devolvemos código de error 400 al intentar añadir un amigos con campos especificados sin completar
             return ResponseEntity.badRequest().build();
         }
