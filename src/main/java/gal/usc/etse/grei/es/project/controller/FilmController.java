@@ -96,13 +96,8 @@ public class FilmController {
             //parámetro a continuación de la interrogación para el filtrado
             @RequestParam(name = "film") String film
     ) {
-        //si la película existe, permitimos obtener sus valoraciones
-        if (films.get(film).isPresent()) {
-            //devolvemos las valoraciones obtenidos
-            return ResponseEntity.of(assessments.getAssessmentsFilm(film));
-        }
-        //devolvemos código de error 404 al producirse un error de búsqueda
-        return ResponseEntity.notFound().build();
+        //devolvemos las valoraciones obtenidas
+        return ResponseEntity.of(assessments.getAssessmentsFilm(film));
     }
 
     //método POST al crear una nueva película
@@ -122,24 +117,24 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
-        //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
-        if (assessment.getFilm().getId() != null && assessment.getUser().getEmail() != null) {
-            //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
-            if (films.get(assessment.getFilm().getId()).isPresent() &&
-                    users.get(assessment.getUser().getEmail()).isPresent()) {
-                //si el usuario no ha realizado una valoración sobre la película, permitimos insertar
-                if (!assessments.getAssessments(assessment.getFilm().getId(), assessment.getUser().getEmail()).isPresent()) {
-                    //devolvemos la valoración insertada
-                    return ResponseEntity.of(assessments.insert(assessment));
-                }
-                //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            }
+        //si no se indica correctamente el id de la película o el email del usuario
+        if (assessment.getFilm().getId() == null && assessment.getUser().getEmail() == null) {
+            //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
+            return ResponseEntity.badRequest().build();
+        }
+        //si la película o el usuario no existen
+        if (!films.get(assessment.getFilm().getId()).isPresent() ||
+                !users.get(assessment.getUser().getEmail()).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
-        //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
-        return ResponseEntity.badRequest().build();
+        //si el usuario ya ha realizado una valoración de la película
+        if (assessments.getAssessments(assessment.getFilm().getId(), assessment.getUser().getEmail()).isPresent()) {
+            //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        //devolvemos la valoración insertada
+        return ResponseEntity.of(assessments.insert(assessment));
     }
 
     //método PUT para modificar una película
@@ -150,13 +145,13 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     ResponseEntity<Film> put(@PathVariable("id") String id, @RequestBody Film film) {
-        //si el id existe, modificamos
-        if (films.get(id).isPresent()) {
-            //devolvemos la película modificada
-            return ResponseEntity.of(films.put(film));
+        //si la película no existe en la base de datos
+        if (!films.get(id).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
         }
-        //devolvemos código de error 404 al producirse un error de búsqueda
-        return ResponseEntity.notFound().build();
+        //devolvemos la película modificada
+        return ResponseEntity.of(films.put(film));
     }
 
     //método PUT para modificar una valoración
@@ -167,28 +162,29 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     ResponseEntity<Assessment> putAssessment(@PathVariable("id") String id, @RequestBody @Valid Assessment assessment) {
-        //si el id existe, modificamos
-        if (assessments.get(id).isPresent()) {
-            //Si introducimos el id de la película y el email del usuario, permitimos introducir la valoración
-            if (assessment.getFilm().getId() != null && assessment.getUser().getEmail() != null) {
-                //si la película y el usuario existen en la base de datos, permitimos introducir la valoración
-                if (films.get(assessment.getFilm().getId()).isPresent() &&
-                        users.get(assessment.getUser().getEmail()).isPresent()) {
-                    if (users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
-                        //devolvemos la valoración insertada
-                        return ResponseEntity.of(assessments.put(id, assessment));
-                    }
-                    //devolvemos código de error 400 al intentar añadir cambiando el usuario
-                    return ResponseEntity.badRequest().build();
-                }
-                //devolvemos código de error 404 al producirse un error de búsqueda
-                return ResponseEntity.notFound().build();
-            }
+        //si la valoración no está presente en la base de datos
+        if (!assessments.get(id).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        //si no se indica el id de la película o el email
+        if (assessment.getFilm().getId() == null || assessment.getUser().getEmail() == null) {
             //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
             return ResponseEntity.badRequest().build();
         }
-        //devolvemos código de error 404 al producirse un error de búsqueda
-        return ResponseEntity.notFound().build();
+        //si la película o el usuario no existe en la base de datos
+        if (!films.get(assessment.getFilm().getId()).isPresent() ||
+                !users.get(assessment.getUser().getEmail()).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        //si se intenta modificar el usuario que inserta la valoración
+        if (users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
+            //devolvemos código de error 400 al intentar añadir cambiando el usuario
+            return ResponseEntity.badRequest().build();
+        }
+        //devolvemos la valoración insertada
+        return ResponseEntity.of(assessments.put(id, assessment));
     }
 
     //método DELETE para eliminar una película
@@ -198,15 +194,15 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la película
     ResponseEntity<Film> delete(@PathVariable("id") String id) {
-        //si la película existe, podremos eliminar la película
-        if (films.get(id).isPresent()) {
-            //eliminamos la película
-            films.delete(id);
-            //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.noContent().build();
+        //si la película no existe en la base de datos
+        if (!films.get(id).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
         }
-        //devolvemos código de error 404 al producirse un error de búsqueda
-        return ResponseEntity.notFound().build();
+        //eliminamos la película
+        films.delete(id);
+        //devolvemos código de error 200 al ir todo bien
+        return ResponseEntity.noContent().build();
     }
 
     //método DELETE para eliminar una valoración
@@ -216,14 +212,14 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
     ResponseEntity<Assessment> deleteAssessment(@PathVariable("id") String id) {
-        //si la valoración existe, podremos eliminar la valoración
-        if (assessments.get(id).isPresent()) {
-            //eliminamos la valoración
-            assessments.delete(id);
-            //devolvemos código de error 200 al ir todo bien
-            return ResponseEntity.noContent().build();
+        //si la valoración no existe en la base de datos
+        if (!assessments.get(id).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
         }
-        //devolvemos código de error 404 al producirse un error de búsqueda
-        return ResponseEntity.notFound().build();
+        //eliminamos la valoración
+        assessments.delete(id);
+        //devolvemos código de error 200 al ir todo bien
+        return ResponseEntity.noContent().build();
     }
 }
