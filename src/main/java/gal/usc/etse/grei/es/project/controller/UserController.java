@@ -10,12 +10,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Optional;
 
 //link al servicio que se encuentra en /users
 @RestController
@@ -38,7 +42,8 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //cogemos la variable id del path y la identificamos con el email
-    ResponseEntity<User> get(@PathVariable("id") String email) {
+    @PreAuthorize("hasRole('ADMIN') or #email == principal or @userService.areFriends(#email, principal)")
+    public ResponseEntity<User> get(@PathVariable("id") String email) {
         //devolvemos el usuario obtenido
         return ResponseEntity.of(users.get(email));
     }

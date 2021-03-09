@@ -24,6 +24,8 @@ public class User {
     private String picture;
     @NotNull(message = "The birthday field can not be empty")
     private Date birthday;
+    private String password;
+    private List<String> roles;
     private List<User> friends;
 
     public User() {
@@ -35,6 +37,8 @@ public class User {
         this.country = country;
         this.picture = picture;
         this.birthday = birthday;
+        /*this.password = password;
+        this.roles = roles;*/
         this.friends = friends;
     }
 
@@ -80,6 +84,22 @@ public class User {
     public User setPicture(String picture) {
         this.picture = picture;
         return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 
     public User setBirthday(Date birthday) {

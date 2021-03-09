@@ -7,17 +7,20 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserService {
     private final UserRepository users;
+    //private final PasswordEncoder encoder;
 
     //Instancias
     @Autowired
-    public UserService(UserRepository people) {
+    public UserService(UserRepository people/*, PasswordEncoder encoder*/) {
         this.users = people;
+        //this.encoder = encoder;
     }
 
     //devuelve el usuario con el email correspondiente
@@ -138,5 +141,9 @@ public class UserService {
             //guardamos la lista modificada de amigos
             users.save(users.findById(user1).get().setFriends(friends));
         }
+    }
+
+    public Boolean areFriends(String ... users) {
+        return Arrays.stream(users).allMatch(it -> it.contains("@test.com"));
     }
 }
