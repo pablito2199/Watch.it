@@ -1,6 +1,8 @@
 package gal.usc.etse.grei.es.project.controller;
 
+import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.UserService;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -169,38 +172,35 @@ public class UserController {
         return ResponseEntity.of(users.addFriend(email, friend));
     }
 
-    //método PUT para modificar un usuario
+    //método PATCH para modificar una película
     //link al servicio en users/{id}, consumes, pues necesita los datos del body
-    @PutMapping(
+    @PatchMapping(
             path = "{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    //recoge la variable del id, pues necesita buscar el email que modificar, y el body con el objeto
-    ResponseEntity<User> put(@PathVariable("id") String email, @RequestBody User user) {
+    //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
+    ResponseEntity<User> patch(@PathVariable("id") String email, @RequestBody List<Map<String, Object>> updates) throws JsonPatchException {
         //si el usuario no está presente en la base de datos
         if (!users.get(email).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
         //si se trata de modificar el aniversario o el email
-        if (!users.get(email).get().getBirthday().equals(user.getBirthday()) ||
-                !users.get(email).get().getEmail().equals(user.getEmail())) {
+        if (updates.get(0).containsValue("replace") &&
+                (updates.get(0).containsValue("/email") || updates.get(0).containsValue("/birthday"))) {
             //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
             return ResponseEntity.badRequest().build();
         }
-        //si el amigo a añadir no se encuentra en los usuarios de la base de datos
-        if (checkFriends(user.getFriends()) == 1) {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+        //si se trata de eliminar el email, nombre o aniversario
+        if (updates.get(0).containsValue("remove") &&
+                (updates.get(0).containsValue("/email") || updates.get(0).containsValue("/birthday") ||
+                        updates.get(0).containsValue("/name"))) {
+            //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
+            return ResponseEntity.badRequest().build();
         }
-        //si el amigo ya se había añadido anteriormente a la lista de amigos
-        if (checkFriends(user.getFriends()) == 2) {
-            //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-        //devolvemos el usuario modificado
-        return ResponseEntity.of(users.put(user));
+        //devolvemos el usuario modificada
+        return ResponseEntity.of(users.patch(email, updates));
     }
 
     //método DELETE para eliminar un usuario

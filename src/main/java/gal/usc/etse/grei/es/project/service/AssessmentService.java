@@ -1,6 +1,8 @@
 package gal.usc.etse.grei.es.project.service;
 
+import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.repository.AssessmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -9,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -17,14 +20,16 @@ public class AssessmentService {
     private final FilmService films;
     private final UserService users;
     private final MongoTemplate mongo;
+    private final PatchMethod patchMethod;
 
     //Instancias
     @Autowired
-    public AssessmentService(AssessmentRepository assessments, FilmService films, UserService users, MongoTemplate mongo) {
+    public AssessmentService(AssessmentRepository assessments, FilmService films, UserService users, MongoTemplate mongo, PatchMethod patchMethod) {
         this.assessments = assessments;
         this.films = films;
         this.users = users;
         this.mongo = mongo;
+        this.patchMethod = patchMethod;
     }
 
     //devuelve la valoración con el id correspondiente
@@ -80,6 +85,21 @@ public class AssessmentService {
             assessment.getUser().setName(users.get(assessment.getUser().getEmail()).get().getName());
         }
         return Optional.of(assessments.insert(assessment));
+    }
+
+    //modifica la valoración
+    public Optional<Assessment> patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
+        //si la valoración se encuentra presente en la base de datos
+        if (this.get(id).isPresent()) {
+            //obtenemos la valoración de la base de datos
+            Assessment assessment = this.get(id).get();
+            //actualizamos los datos con el patch
+            assessment = patchMethod.patch(assessment, updates);
+            //actualizamos en la base de datos
+            return Optional.of(assessments.save(assessment));
+        }
+        //devolvemos el objeto vacío
+        return Optional.empty();
     }
 
     //modifica la valoración

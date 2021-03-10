@@ -1,26 +1,27 @@
 package gal.usc.etse.grei.es.project.service;
 
+import com.github.fge.jsonpatch.JsonPatchException;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
     private final UserRepository users;
+    private final PatchMethod patchMethod;
     //private final PasswordEncoder encoder;
 
     //Instancias
     @Autowired
-    public UserService(UserRepository people/*, PasswordEncoder encoder*/) {
+    public UserService(UserRepository people, PatchMethod patchMethod/*, PasswordEncoder encoder*/) {
         this.users = people;
         //this.encoder = encoder;
+        this.patchMethod = patchMethod;
     }
 
     //devuelve el usuario con el email correspondiente
@@ -103,6 +104,21 @@ public class UserService {
             //guardamos la lista modificada de amigos
             return Optional.of(users.save(users.findById(email).get().setFriends(friends)));
         }
+        return Optional.empty();
+    }
+
+    //modifica la película
+    public Optional<User> patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
+        //si la película se encuentra presente en la base de datos
+        if (this.get(id).isPresent()) {
+            //obtenemos la película de la base de datos
+            User user = this.get(id).get();
+            //actualizamos los datos con el patch
+            user = patchMethod.patch(user, updates);
+            //actualizamos en la base de datos
+            return Optional.of(users.save(user));
+        }
+        //devolvemos el objeto vacío
         return Optional.empty();
     }
 
