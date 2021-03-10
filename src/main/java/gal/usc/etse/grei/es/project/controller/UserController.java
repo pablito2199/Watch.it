@@ -14,12 +14,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.Map;
-import java.util.Optional;
 
 //link al servicio que se encuentra en /users
 @RestController
@@ -51,8 +48,8 @@ public class UserController {
     //método GET al recuperar usuarios
     //produces lo que devuelve
     @GetMapping(
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recogemos todos los usuarios paginando con los requestparam
     ResponseEntity<Page<User>> get(
@@ -63,13 +60,27 @@ public class UserController {
             @RequestParam(name = "email", required = false) String email,
             @RequestParam(name = "name", required = false) String name
     ) {
+        //ordenamos por aniversario
+        if (sort.contains("+birthday")) {
+            sort.add("+birthday.year");
+            sort.add("+birthday.month");
+            sort.add("+birthday.day");
+            sort.remove("+birthday");
+        }
+        if (sort.contains("-birthday")) {
+            sort.add("-birthday.year");
+            sort.add("-birthday.month");
+            sort.add("-birthday.day");
+            sort.remove("-birthday");
+        }
+
         //ordenamos la lista obtenida
         List<Sort.Order> criteria = sort.stream().map(string -> {
-            //ordenamos la lista acendentemente
             if (string.startsWith("+")) {
+                //ordenamos la lista acendentemente
                 return Sort.Order.asc(string.substring(1));
-                //ordenamos la lista descendentemente
             } else if (string.startsWith("-")) {
+                //ordenamos la lista descendentemente
                 return Sort.Order.desc(string.substring(1));
             } else return null;
         })
@@ -102,7 +113,8 @@ public class UserController {
     //método POST al crear un nuevo usuario
     //consumes, pues necesita los datos del body
     @PostMapping(
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<User> insert(@RequestBody @Valid User user) {
         //si el amigo no se encuentra en la base de datos
@@ -128,7 +140,8 @@ public class UserController {
     //consumes, pues necesita los datos del body
     @PostMapping(
             path = "{id}",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<User> addFriend(@PathVariable("id") String email, @RequestBody User friend) {
         //si el amigo no se encuentra en la base de datos
@@ -160,7 +173,8 @@ public class UserController {
     //link al servicio en users/{id}, consumes, pues necesita los datos del body
     @PutMapping(
             path = "{id}",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el email que modificar, y el body con el objeto
     ResponseEntity<User> put(@PathVariable("id") String email, @RequestBody User user) {

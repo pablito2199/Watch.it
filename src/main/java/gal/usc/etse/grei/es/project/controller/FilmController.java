@@ -1,5 +1,6 @@
 package gal.usc.etse.grei.es.project.controller;
 
+import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.model.Film;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -67,6 +69,20 @@ public class FilmController {
             @RequestParam(name = "month", required = false) Integer month,
             @RequestParam(name = "year", required = false) Integer year
     ) {
+        //ordenamos por fecha de estreno
+        if (sort.contains("+releaseDate")) {
+            sort.add("+releaseDate.year");
+            sort.add("+releaseDate.month");
+            sort.add("+releaseDate.day");
+            sort.remove("+releaseDate");
+        }
+        if (sort.contains("-releaseDate")) {
+            sort.add("-releaseDate.year");
+            sort.add("-releaseDate.month");
+            sort.add("-releaseDate.day");
+            sort.remove("-releaseDate");
+        }
+
         //ordenamos la lista obtenida
         List<Sort.Order> criteria = sort.stream().map(string -> {
             //ordenamos la lista acendentemente
@@ -103,7 +119,8 @@ public class FilmController {
     //método POST al crear una nueva película
     //consumes, pues necesita los datos del body
     @PostMapping(
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
         //devolvemos la película insertada
@@ -114,7 +131,8 @@ public class FilmController {
     //consumes, pues necesita los datos del body
     @PostMapping(
             path = "assessments",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
         //si no se indica correctamente el id de la película o el email del usuario
@@ -139,28 +157,35 @@ public class FilmController {
 
     //método PUT para modificar una película
     //link al servicio en films/{id}, consumes, pues necesita los datos del body
-    @PutMapping(
+    @PatchMapping(
             path = "{id}",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<Film> put(@PathVariable("id") String id, @RequestBody @Valid Film film) {
+    ResponseEntity<Film> patch(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) throws JsonPatchException {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
-        //indicamos el id de la película a modificar
-        film.setId(id);
+        //System.out.println(updates);
+        //si se intenta eliminar el título o el id
+        if (updates.get(0).containsValue("remove") &&
+                (updates.get(0).containsValue("/title") || updates.get(0).containsValue("/id"))) {
+            //devolvemos código de error 400 al intentar el eliminar el campo del título o id
+            return ResponseEntity.badRequest().build();
+        }
         //devolvemos la película modificada
-        return ResponseEntity.of(films.put(film));
+        return ResponseEntity.of(films.patch(id, updates));
     }
 
     //método PUT para modificar una valoración
     //link al servicio en films/assessments/{id}, consumes, pues necesita los datos del body
     @PutMapping(
             path = "assessments/{id}",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     ResponseEntity<Assessment> putAssessment(@PathVariable("id") String id, @RequestBody @Valid Assessment assessment) {
@@ -180,8 +205,9 @@ public class FilmController {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
-        //si se intenta modificar el usuario que inserta la valoración
-        if (!users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail())) {
+        //si se intenta modificar el usuario o película que inserta la valoración
+        if (!users.get(assessment.getUser().getEmail()).get().getEmail().equals(assessments.get(id).get().getUser().getEmail()) ||
+            !films.get(assessment.getFilm().getId()).get().getId().equals(assessments.get(id).get().getFilm().getId())) {
             //devolvemos código de error 400 al intentar añadir cambiando el usuario
             return ResponseEntity.badRequest().build();
         }

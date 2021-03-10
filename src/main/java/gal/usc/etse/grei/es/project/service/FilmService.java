@@ -1,5 +1,6 @@
 package gal.usc.etse.grei.es.project.service;
 
+import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.repository.FilmRepository;
@@ -12,18 +13,21 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class FilmService {
     private final FilmRepository films;
     private final MongoTemplate mongo;
+    private final PatchMethod patchMethod;
 
     //Instancias
     @Autowired
-    public FilmService(FilmRepository films, MongoTemplate mongo) {
+    public FilmService(FilmRepository films, MongoTemplate mongo, PatchMethod patchMethod) {
         this.films = films;
         this.mongo = mongo;
+        this.patchMethod = patchMethod;
     }
 
     //devuelve la película con el id correspondiente
@@ -35,7 +39,9 @@ public class FilmService {
     public Optional<Page<Film>> get(int page, int size, Sort sort, List<String> keywords, List<String> genres,
                                     List<String> producers, List<String> crew, List<String> cast, Date releasedate) {
         Pageable request = PageRequest.of(page, size, sort);
+        //mostramos aquellas películas con id
         Criteria criteria = Criteria.where("_id").exists(true);
+        //si se pasa filtro, se añade a criteria
         if (keywords != null) {
             criteria.and("keywords").all(keywords);
         }
@@ -62,8 +68,16 @@ public class FilmService {
                 criteria.and("releaseDate.year").is(releasedate.getYear());
             }
         }
+        //completamos la query
         Query query = Query.query(criteria).with(request);
+        //buscamos con los filtros, indicando la clase Film, que es lo que busca
         List<Film> result = mongo.find(query, Film.class);
+
+        //solo mostraremos los campos deseados
+        for (Film f : result) {
+            f.setTagline(null).setCollection(null).setKeywords(null).setProducers(null).setCrew(null)
+                    .setCast(null).setBudget(null).setStatus(null).setRuntime(null).setRevenue(null);
+        }
 
         if (result.isEmpty())
             return Optional.empty();
@@ -78,8 +92,18 @@ public class FilmService {
     }
 
     //modifica la película
-    public Optional<Film> put(Film film) {
-        return Optional.of(films.save(film));
+    public Optional<Film> patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
+        //si la película se encuentra presente en la base de datos
+        if (this.get(id).isPresent()) {
+            //obtenemos la película de la base de datos
+            Film film = this.get(id).get();
+            //actualizamos los datos con el patch
+            film = patchMethod.patch(film, updates);
+            //actualizamos en la base de datos
+            return Optional.of(films.save(film));
+        }
+        //devolvemos el objeto vacío
+        return Optional.empty();
     }
 
     //elimina la película con el id correspondiente

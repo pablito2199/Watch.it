@@ -3,7 +3,6 @@ package gal.usc.etse.grei.es.project.configuration;
 import gal.usc.etse.grei.es.project.filter.AuthenticationFilter;
 import gal.usc.etse.grei.es.project.filter.AuthorizationFilter;
 import gal.usc.etse.grei.es.project.service.AuthenticationService;
-import gal.usc.etse.grei.es.project.service.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
