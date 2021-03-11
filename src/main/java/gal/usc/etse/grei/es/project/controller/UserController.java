@@ -232,8 +232,13 @@ public class UserController {
             //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
             return ResponseEntity.badRequest().build();
         }
-        //devolvemos el usuario modificado
-        return ResponseEntity.of(users.patch(email, updates));
+        try {
+            //devolvemos el usuario modificado
+            return ResponseEntity.of(users.patch(email, updates));
+        } catch (JsonPatchException e) {
+            //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     //método PUT para modificar una amistad

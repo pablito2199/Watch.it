@@ -175,8 +175,13 @@ public class FilmController {
             //devolvemos código de error 400 al intentar el eliminar el campo del título o id
             return ResponseEntity.badRequest().build();
         }
-        //devolvemos la película modificada
-        return ResponseEntity.of(films.patch(id, updates));
+        try {
+            //devolvemos la película modificada
+            return ResponseEntity.of(films.patch(id, updates));
+        } catch (JsonPatchException e) {
+            //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     //método PATCH para modificar una valoración
@@ -207,8 +212,13 @@ public class FilmController {
             //devolvemos código de error 400 al intentar el eliminar el campo de película, usuario, valoración o id
             return ResponseEntity.badRequest().build();
         }
-        //devolvemos la valoración modificada
-        return ResponseEntity.of(assessments.patch(id, updates));
+        try {
+            //devolvemos la valoración modificada
+            return ResponseEntity.of(assessments.patch(id, updates));
+        } catch (JsonPatchException e) {
+            //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
     }
 
     //método DELETE para eliminar una película
