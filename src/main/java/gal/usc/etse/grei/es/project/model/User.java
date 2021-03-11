@@ -22,6 +22,7 @@ public class User {
     private String picture;
     @NotNull(message = "The birthday field can not be empty")
     private Date birthday;
+    @NotBlank(message = "The password field can not be empty")
     private String password;
     private List<String> roles;
 
@@ -34,8 +35,8 @@ public class User {
         this.country = country;
         this.picture = picture;
         this.birthday = birthday;
-        /*this.password = password;
-        this.roles = roles;*/
+        this.password = password;
+        this.roles = roles;
     }
 
     public String getEmail() {
