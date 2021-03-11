@@ -24,12 +24,11 @@ public class User {
     private Date birthday;
     private String password;
     private List<String> roles;
-    private List<User> friends;
 
     public User() {
     }
 
-    public User(String email, String name, String country, String picture, Date birthday, List<User> friends) {
+    public User(String email, String name, String country, String picture, Date birthday) {
         this.email = email;
         this.name = name;
         this.country = country;
@@ -37,7 +36,6 @@ public class User {
         this.birthday = birthday;
         /*this.password = password;
         this.roles = roles;*/
-        this.friends = friends;
     }
 
     public String getEmail() {
@@ -58,10 +56,6 @@ public class User {
 
     public Date getBirthday() {
         return birthday;
-    }
-
-    public List<User> getFriends() {
-        return friends;
     }
 
     public User setEmail(String email) {
@@ -105,22 +99,17 @@ public class User {
         return this;
     }
 
-    public User setFriends(List<User> friends) {
-        this.friends = friends;
-        return this;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(email, user.email) && Objects.equals(name, user.name) && Objects.equals(country, user.country) && Objects.equals(picture, user.picture) && Objects.equals(birthday, user.birthday) && Objects.equals(friends, user.friends);
+        return Objects.equals(email, user.email) && Objects.equals(name, user.name) && Objects.equals(country, user.country) && Objects.equals(picture, user.picture) && Objects.equals(birthday, user.birthday);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, name, country, picture, birthday, friends);
+        return Objects.hash(email, name, country, picture, birthday);
     }
 
     @Override
@@ -131,7 +120,6 @@ public class User {
                 .add("country='" + country + "'")
                 .add("picture='" + picture + "'")
                 .add("birthday=" + birthday)
-                .add("friends=" + friends)
                 .toString();
     }
 }

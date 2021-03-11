@@ -2,9 +2,10 @@ package gal.usc.etse.grei.es.project.controller;
 
 import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
-import gal.usc.etse.grei.es.project.model.Film;
+import gal.usc.etse.grei.es.project.model.Frienship;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
+import gal.usc.etse.grei.es.project.service.FriendshipService;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //link al servicio que se encuentra en /users
@@ -26,12 +28,14 @@ import java.util.stream.Collectors;
 @RequestMapping("users")
 public class UserController {
     private final AssessmentService assessments;
+    private final FriendshipService friendships;
     private final UserService users;
 
     //Instancias
     @Autowired
-    public UserController(AssessmentService assessments, UserService users) {
+    public UserController(AssessmentService assessments, FriendshipService friendships, UserService users) {
         this.assessments = assessments;
+        this.friendships = friendships;
         this.users = users;
     }
 
@@ -113,6 +117,51 @@ public class UserController {
         return ResponseEntity.of(assessments.getAssessmentsUser(user));
     }
 
+    //método GET al recuperar los amigos de un usuario
+    //link al servicio en users/{user}/friendships/{friend}, produces lo que devuelve
+    @GetMapping(
+            path = "{user}/friendships/{friendship}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<Frienship> get(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+        //si la amistad no se encuentra en la base de datos
+        if (!friendships.get(friendship).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        //si el usuario no es el user o el friend, o no se ha aceptado la amistad todavía
+        if ((!user.equals(friendships.get(friendship).get().getUser()) &&
+                !user.equals(friendships.get(friendship).get().getFriend())) ||
+                friendships.get(friendship).get().getConfirmed() == null) {
+            //devolvemos código de error 400 al intentar recuperar una amistad que no es suya
+            return ResponseEntity.badRequest().build();
+        }
+        //devolvemos la amistad obtenida
+        return ResponseEntity.of(friendships.get(friendship));
+    }
+
+    //método GET al recuperar los amigos de un usuario
+    //link al servicio en users/{id}/friendships, produces lo que devuelve
+    @GetMapping(
+            path = "{id}/friendships",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    ResponseEntity<List<String>> getFriends(@PathVariable("id") String user) {
+        //si el usuario no existe
+        if (!users.get(user).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        Optional<List<String>> result = Optional.of(friendships.getFriends(user));
+        //si la lista está vacía
+        if (result.get().size() == 0) {
+            //devolvemos código de error 204 al ir todo bien
+            return ResponseEntity.noContent().build();
+        }
+        //devolvemos los amigos obtenidos
+        return ResponseEntity.of(result);
+    }
+
     //método POST al crear un nuevo usuario
     //consumes, pues necesita los datos del body
     @PostMapping(
@@ -120,16 +169,6 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     ResponseEntity<User> insert(@RequestBody @Valid User user) {
-        //si el amigo no se encuentra en la base de datos
-        if (checkFriends(user.getFriends()) == 1) {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
-        }
-        //si el amigo ya se había añadido anteriormente a la lista de amigos
-        if (checkFriends(user.getFriends()) == 2) {
-            //devolvemos código de error 409 al haber un conflicto, pues ya existe el amigo que se intenta añadir
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
         //si el usuario ya existe en la base de datos
         if (users.get(user.getEmail()).isPresent()) {
             //devolvemos código de error 409 al haber un conflicto, pues ya existe un usuario con ese correo
@@ -139,37 +178,31 @@ public class UserController {
         return ResponseEntity.of(users.insert(user));
     }
 
-    //método POST al añadir un nuevo amigo
-    //consumes, pues necesita los datos del body
+    //método POST al crear una nueva amistad
+    //link al servicio en users/{id}/friendships, consumes, pues necesita los datos del body
     @PostMapping(
-            path = "{id}",
+            path = "{id}/friendships",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    ResponseEntity<User> addFriend(@PathVariable("id") String email, @RequestBody User friend) {
-        //si el amigo no se encuentra en la base de datos
-        if (!users.get(friend.getEmail()).isPresent() || !users.get(email).isPresent()) {
+    ResponseEntity<Frienship> insert(@PathVariable("id") String user, @RequestBody User friend) {
+        //si el amigo o el usuario no se encuentran en la base de datos
+        if (!users.get(friend.getEmail()).isPresent() || !users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
-        //si los campos de email y nombre son nulos, o se intenta añadir a si mismo como amigo
-        if (friend.getEmail() == null || friend.getName() == null ||
-                email.equals(friend.getEmail())) {
-            //devolvemos código de error 400 al intentar añadir un amigos con campos especificados sin completar
+        //si el campo friend es nulo, o se intenta añadir a si mismo como amigo
+        if (friend.getEmail() == null || user.equals(friend.getEmail())) {
+            //devolvemos código de error 400 al intentar añadir un amigos con campos inválidos
             return ResponseEntity.badRequest().build();
         }
-        //si se intenta añadir un amigo con campos inválidos
-        if (checkFriend(email, friend) == 1) {
-            //devolvemos código de error 400 al intentar añadir un amigo con datos inválidos
-            return ResponseEntity.badRequest().build();
-        }
-        //si el amigo ya se había añadido anteriormente a la lista de amigos
-        if (checkFriend(email, friend) == 2) {
-            //devolvemos código de error 409 al ir haber un conflicto, pues ya existe el amigo que se intenta añadir
+        //si la amistad ya existe
+        if (friendships.getFriends(user).contains(friend.getEmail())) {
+            //devolvemos código de error 409 al producirse un conflicto
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        //devolvemos el usuario con su nuevo amigo
-        return ResponseEntity.of(users.addFriend(email, friend));
+        //devolvemos la amistad creada
+        return ResponseEntity.of(friendships.insert(user, friend.getEmail()));
     }
 
     //método PATCH para modificar una película
@@ -199,8 +232,37 @@ public class UserController {
             //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
             return ResponseEntity.badRequest().build();
         }
-        //devolvemos el usuario modificada
+        //devolvemos el usuario modificado
         return ResponseEntity.of(users.patch(email, updates));
+    }
+
+    //método PUT para modificar una amistad
+    //recoge la variable del user, pues necesita buscar el usuario que desea modificar una amistad
+    //recoge la variable del friendship, pues necesita buscar la amistad que desea modificar
+    @PutMapping(
+            path = "{user}/friendships/{friendship}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
+    ResponseEntity<Frienship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship)  {
+        //si el usuario no está presente en la base de datos
+        if (!users.get(user).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        //si la amistad no se encuentra en la base de datos
+        if (!friendships.get(friendship).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        //si el usuario no es el friend, o ya se ha aceptado la amistad
+        if (!user.equals(friendships.get(friendship).get().getFriend()) ||
+                friendships.get(friendship).get().getConfirmed() != null) {
+            //devolvemos código de error 400 al intentar eliminar una amistad que no es suya
+            return ResponseEntity.badRequest().build();
+        }
+        //devolvemos la amistad modificada
+        return ResponseEntity.of(friendships.put(friendship));
     }
 
     //método DELETE para eliminar un usuario
@@ -217,97 +279,38 @@ public class UserController {
         }
         //eliminamos el usuario
         users.delete(email);
-        //devolvemos código de error 200 al ir todo bien
+        //devolvemos código de error 204 al ir todo bien
         return ResponseEntity.noContent().build();
     }
 
-    //método DELETE para eliminar un amigo
-    //link al servicio en users/{id}
+    //método DELETE para eliminar una amistad
+    //link al servicio en users/{id}/friendships, consumes, pues necesita los datos del body
     @DeleteMapping(
-            path = "{id}",
-            consumes = MediaType.APPLICATION_JSON_VALUE
+            path = "{user}/friendships/{friendship}"
     )
-    //recoge la variable del id, pues necesita buscar el email para eliminar el amigo de un usuario
-    //que se encuetra en el @RequestBody
-    ResponseEntity<User> deleteFriend(@PathVariable("id") String user1, @RequestBody User user2) {
-        //si el usuario no se encuentra en la lista de amigos
-        if (!users.getFriendsIds(user1).contains(user2.getEmail())) {
+    //recoge la variable del user_id, pues necesita buscar el usuario que quiere eliminar el amigo
+    //recoge la variable del id, pues necesita buscar la amistad que desea eliminarse
+    ResponseEntity<Frienship> delete(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+        //si el usuario no se encuentra en la base de datos
+        if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             return ResponseEntity.notFound().build();
         }
-        //eliminamos el amigo del usuario
-        users.deleteFriend(user1, user2.getEmail());
-        //devolvemos código de error 200 al ir todo bien
+        //si la amistad no se encuentra en la base de datos
+        if (!friendships.get(friendship).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            return ResponseEntity.notFound().build();
+        }
+        //si el usuario no es el user o el friend, o no se ha aceptado la amistad todavía
+        if ((!user.equals(friendships.get(friendship).get().getUser()) &&
+                !user.equals(friendships.get(friendship).get().getFriend())) ||
+                friendships.get(friendship).get().getConfirmed() == null) {
+            //devolvemos código de error 400 al intentar eliminar una amistad que no es suya
+            return ResponseEntity.badRequest().build();
+        }
+        //eliminamos la amistad
+        friendships.delete(friendship);
+        //devolvemos código de error 204 al ir todo bien
         return ResponseEntity.noContent().build();
-    }
-
-    //comprobamos que los amigos cumplan los requisitos necesarios
-    private Integer checkFriend(String user, User friend) {
-        //comprobamos que este tenga email y nombre
-        if (friend.getEmail() == null || friend.getName() == null) {
-            return 1;
-        }
-        //si el usuario está presente en la base de datos
-        if (users.get(friend.getEmail()).isPresent()) {
-            //comprobamos que el usuario coincide con uno existente en la base de datos
-            if (friend.getEmail().equals(users.get(friend.getEmail()).get().getEmail()) &&
-                    friend.getName().equals(users.get(friend.getEmail()).get().getName())) {
-                //si el usuario está presente en la base de datos
-                if (users.get(user).isPresent()) {
-                    //si existe algún amigo, comprobamos
-                    if (users.getAllUserData(user).isPresent()) {
-                        //si tiene algun amigo, comprobamos
-                        if (users.getAllUserData(user).get().getFriends() != null) {
-                            //comprobamos si existe algún amigo
-                            for (User us1 : users.getAllUserData(user).get().getFriends()) {
-                                //si existe algún usuario con ese email en amigos, no se introducirá
-                                if (us1.getEmail().equals(friend.getEmail())) {
-                                    return 2;
-                                }
-                            }
-                        }
-                    }
-                    return 0;
-                }
-            }
-            return 1;
-        }
-        return 0;
-    }
-
-    //comprobamos que los amigos cumplan los requisitos necesarios
-    private Integer checkFriends(List<User> friends) {
-        if (friends != null) {
-            //para cada amigo introducido
-            for (User u : friends) {
-                //comprobamos que este tenga email y nombre
-                if (u.getEmail() == null || u.getName() == null) {
-                    return 1;
-                }
-                //si existe el amigo está presente en la base de datos en la base de datos
-                if (users.get(u.getEmail()).isPresent()) {
-                    //comprobamos que el usuario coincide con uno existente en la base de datos
-                    if (u.getEmail().equals(users.get(u.getEmail()).get().getEmail()) &&
-                            u.getName().equals(users.get(u.getEmail()).get().getName())) {
-                        //si existe algún amigo, comprobamos
-                        if (users.getAllUserData(u.getEmail()).isPresent()) {
-                            //si tiene amigos, comprobamos
-                            if (users.getAllUserData(u.getEmail()).get().getFriends() != null) {
-                                //comprobamos si existe algún amigo
-                                for (User us : users.getAllUserData(u.getEmail()).get().getFriends()) {
-                                    //si existe algún usuario con ese email en amigos, no se introducirá
-                                    if (us.getEmail().equals(u.getEmail())) {
-                                        return 2;
-                                    }
-                                }
-                                return 0;
-                            }
-                        }
-                    }
-                }
-                return 1;
-            }
-        }
-        return 0;
     }
 }

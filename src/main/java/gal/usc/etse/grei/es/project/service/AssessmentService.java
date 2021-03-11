@@ -2,7 +2,6 @@ package gal.usc.etse.grei.es.project.service;
 
 import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
-import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.repository.AssessmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
