@@ -213,7 +213,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<User> patch(@PathVariable("id") String email, @RequestBody List<Map<String, Object>> updates) throws JsonPatchException {
+    ResponseEntity<User> patch(@PathVariable("id") String email, @RequestBody List<Map<String, Object>> updates) {
         //si el usuario no está presente en la base de datos
         if (!users.get(email).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -249,7 +249,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
-    ResponseEntity<Frienship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship)  {
+    ResponseEntity<Frienship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no está presente en la base de datos
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda

@@ -1,12 +1,8 @@
 package gal.usc.etse.grei.es.project.service;
 
-import com.github.fge.jsonpatch.JsonPatchException;
-import gal.usc.etse.grei.es.project.model.Assessment;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.model.Frienship;
-import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.repository.FriendshipRepository;
-import gal.usc.etse.grei.es.project.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -16,22 +12,17 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class FriendshipService {
     private final FriendshipRepository friendships;
-    private final UserRepository users;
-    private final PatchMethod patchMethod;
     private final MongoTemplate mongo;
 
     //Instancias
     @Autowired
-    public FriendshipService(FriendshipRepository friendships, UserRepository people, PatchMethod patchMethod, MongoTemplate mongo) {
+    public FriendshipService(FriendshipRepository friendships, MongoTemplate mongo) {
         this.friendships = friendships;
-        this.users = people;
-        this.patchMethod = patchMethod;
         this.mongo = mongo;
     }
 

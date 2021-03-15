@@ -31,15 +31,19 @@ public class Frienship {
     public String getId() {
         return id;
     }
+
     public String getUser() {
         return user;
     }
+
     public String getFriend() {
         return friend;
     }
+
     public Boolean getConfirmed() {
         return confirmed;
     }
+
     public Date getSince() {
         return since;
     }
@@ -48,18 +52,22 @@ public class Frienship {
         this.id = id;
         return this;
     }
+
     public Frienship setUser(String user) {
         this.user = user;
         return this;
     }
+
     public Frienship setFriend(String friend) {
         this.friend = friend;
         return this;
     }
+
     public Frienship setConfirmed(Boolean confirmed) {
         this.confirmed = confirmed;
         return this;
     }
+
     public Frienship setSince(Date since) {
         this.since = since;
         return this;

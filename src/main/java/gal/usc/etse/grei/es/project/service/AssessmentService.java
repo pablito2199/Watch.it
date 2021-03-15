@@ -101,21 +101,6 @@ public class AssessmentService {
         return Optional.empty();
     }
 
-    //modifica la valoración
-    public Optional<Assessment> put(String id, Assessment assessment) {
-        //indicamos el id a modificar
-        assessment.setId(id);
-        //si la película está presente en la base de datos, indicamos el título de la película
-        if (films.get(assessment.getFilm().getId()).isPresent()) {
-            assessment.getFilm().setTitle(films.get(assessment.getFilm().getId()).get().getTitle());
-        }
-        //si el usuario está presente en la base de datos, indicamos el nombre del usuario
-        if (users.get(assessment.getUser().getEmail()).isPresent()) {
-            assessment.getUser().setName(users.get(assessment.getUser().getEmail()).get().getName());
-        }
-        return Optional.of(assessments.save(assessment));
-    }
-
     //elimina la valoración con el id correspondiente
     public void delete(String id) {
         assessments.deleteById(id);

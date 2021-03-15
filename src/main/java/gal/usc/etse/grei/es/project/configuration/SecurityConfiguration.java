@@ -3,6 +3,7 @@ package gal.usc.etse.grei.es.project.configuration;
 import gal.usc.etse.grei.es.project.filter.AuthenticationFilter;
 import gal.usc.etse.grei.es.project.filter.AuthorizationFilter;
 import gal.usc.etse.grei.es.project.service.AuthenticationService;
+import gal.usc.etse.grei.es.project.service.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import java.util.*;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthenticationService auth;
+    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Autowired
     public SecurityConfiguration(AuthenticationService auth) {
@@ -91,6 +93,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public Key tokenSignKey() {
         // Xeramos unha clave de firmado aleatoria para o algoritmo SHA512
-        return Keys.secretKeyFor(SignatureAlgorithm.HS512);
+        return SecurityConfiguration.key;
     }
 }

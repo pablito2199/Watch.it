@@ -76,8 +76,11 @@ public class UserService {
             User user = this.get(id).get();
             //actualizamos los datos con el patch
             user = patchMethod.patch(user, updates);
-            //codificamos la contraseña
-            user.setPassword(encoder.encode(user.getPassword()));
+            //si se modifica la contraseña, se encripta, en caso contrario no
+            if (updates.get(0).containsValue("replace") && updates.get(0).containsValue("/password")) {
+                //codificamos la contraseña
+                user.setPassword(encoder.encode(user.getPassword()));
+            }
             //actualizamos en la base de datos
             user = users.save(user);
             //borramos la contraseña para que no se muestre
@@ -94,7 +97,7 @@ public class UserService {
         users.deleteById(email);
     }
 
-    public Boolean areFriends(String ... users) {
+    public Boolean areFriends(String... users) {
         return Arrays.stream(users).allMatch(it -> it.contains("@test.com"));
     }
 }

@@ -27,7 +27,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final Key key;
 
     // Establecemos unha duración para os tokens
-    private static final long TOKEN_DURATION = Duration.ofMinutes(60).toMillis();
+    private final static long TOKEN_DURATION = Duration.ofMinutes(60).toMillis();
 
     public AuthenticationFilter(AuthenticationManager manager, Key key){
         this.manager = manager;
@@ -41,6 +41,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             // Obtemos o obxecto JSON do body da request HTTP
             JsonNode credentials = new ObjectMapper().readValue(request.getInputStream(), JsonNode.class);
 
+            Authentication man = manager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            credentials.get("email").textValue(),
+                            credentials.get("password").textValue()
+                    )
+            );
+            System.out.println(man.getCredentials());
             // Tentamos autenticarnos coas credenciais proporcionadas
             return manager.authenticate(
                     new UsernamePasswordAuthenticationToken(

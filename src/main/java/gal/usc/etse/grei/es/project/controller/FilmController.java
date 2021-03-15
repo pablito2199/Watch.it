@@ -208,7 +208,7 @@ public class FilmController {
         //si se intenta eliminar el usuario, la película, la valoración o el id
         if (updates.get(0).containsValue("remove") &&
                 (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
-                updates.get(0).containsValue("/rating") || updates.get(0).containsValue("/_id"))) {
+                        updates.get(0).containsValue("/rating") || updates.get(0).containsValue("/_id"))) {
             //devolvemos código de error 400 al intentar el eliminar el campo de película, usuario, valoración o id
             return ResponseEntity.badRequest().build();
         }
