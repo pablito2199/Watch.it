@@ -105,22 +105,24 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(email, user.email) && Objects.equals(name, user.name) && Objects.equals(country, user.country) && Objects.equals(picture, user.picture) && Objects.equals(birthday, user.birthday);
+        return Objects.equals(email, user.email) && Objects.equals(name, user.name) && Objects.equals(country, user.country) && Objects.equals(picture, user.picture) && Objects.equals(birthday, user.birthday) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, name, country, picture, birthday);
+        return Objects.hash(email, name, country, picture, birthday, password, roles);
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", User.class.getSimpleName() + "[", "]")
-                .add("email='" + email + "'")
-                .add("name='" + name + "'")
-                .add("country='" + country + "'")
-                .add("picture='" + picture + "'")
-                .add("birthday=" + birthday)
-                .toString();
+        return "User{" +
+                "email='" + email + '\'' +
+                ", name='" + name + '\'' +
+                ", country='" + country + '\'' +
+                ", picture='" + picture + '\'' +
+                ", birthday=" + birthday +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
+                '}';
     }
 }

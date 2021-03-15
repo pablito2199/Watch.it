@@ -70,7 +70,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         // Creamos unha instancia do algoritmo BCrypt para empregar como encoder
         // de contrasinais
         return new BCryptPasswordEncoder();

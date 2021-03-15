@@ -29,7 +29,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     // Establecemos unha duración para os tokens
     private final static long TOKEN_DURATION = Duration.ofMinutes(60).toMillis();
 
-    public AuthenticationFilter(AuthenticationManager manager, Key key){
+    public AuthenticationFilter(AuthenticationManager manager, Key key) {
         this.manager = manager;
         this.key = key;
     }
@@ -41,13 +41,6 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             // Obtemos o obxecto JSON do body da request HTTP
             JsonNode credentials = new ObjectMapper().readValue(request.getInputStream(), JsonNode.class);
 
-            Authentication man = manager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            credentials.get("email").textValue(),
-                            credentials.get("password").textValue()
-                    )
-            );
-            System.out.println(man.getCredentials());
             // Tentamos autenticarnos coas credenciais proporcionadas
             return manager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -55,7 +48,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                             credentials.get("password").textValue()
                     )
             );
-        }catch (IOException ex){
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -75,7 +68,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         // Creamos o token JWT empregando o builder
         JwtBuilder tokenBuilder = Jwts.builder()
                 // Establecemos como "propietario" do token ao usuario que fixo login
-                .setSubject(((User)authResult.getPrincipal()).getUsername())
+                .setSubject(((User) authResult.getPrincipal()).getUsername())
                 // Establecemos a data de emisión do token
                 .setIssuedAt(new Date(now))
                 // Establecemos a data máxima de validez do token

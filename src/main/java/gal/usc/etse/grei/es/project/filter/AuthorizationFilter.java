@@ -21,7 +21,7 @@ import java.util.List;
 public class AuthorizationFilter extends BasicAuthenticationFilter {
     private final Key key;
 
-    public AuthorizationFilter(AuthenticationManager manager, Key key){
+    public AuthorizationFilter(AuthenticationManager manager, Key key) {
         super(manager);
         this.key = key;
     }
@@ -29,13 +29,13 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
     // Método a executar cando se comproba o control de acceso
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try{
+        try {
             // Lemos o token da cabeceira "Authentication"
             String header = request.getHeader("Authorization");
 
             // Se non hai un token, ou non comeza co string "Bearer" (é dicir, non é un token JWT)
             // pasamos seguimos executando a cadea de filtros, e non facemos nada mais neste
-            if(header == null || !header.startsWith("Bearer")){
+            if (header == null || !header.startsWith("Bearer")) {
                 chain.doFilter(request, response);
                 return;
             }
@@ -48,7 +48,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             chain.doFilter(request, response);
-        } catch(ExpiredJwtException e){
+        } catch (ExpiredJwtException e) {
             // Se se sobrepasou a duración do token devolvemos un erro 419.
             response.setStatus(419);
         }

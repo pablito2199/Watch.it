@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -46,6 +47,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //cogemos la variable id del path y la identificamos con el email
+    //solo puede admin, el propio usuario y sus amigos
     @PreAuthorize("hasRole('ADMIN') or #email == principal or @userService.areFriends(#email, principal)")
     public ResponseEntity<User> get(@PathVariable("id") String email) {
         //devolvemos el usuario obtenido
@@ -59,6 +61,8 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recogemos todos los usuarios paginando con los requestparam
+    //si está logueado
+    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<User>> get(
             //parámetros a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -104,6 +108,8 @@ public class UserController {
             path = "assessments",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    //solo puede admin, el propio usuario y sus amigos
+    @PreAuthorize("hasRole('ADMIN') or #user == principal or @userService.areFriends(#user, principal)")
     ResponseEntity<List<Assessment>> getAssessmentsUser(
             //parámetro a continuación de la interrogación para el filtrado
             @RequestParam(name = "user") String user
@@ -168,6 +174,8 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    //permite crear un usuario a cualquiera
+    @PreAuthorize("permitAll()")
     ResponseEntity<User> insert(@RequestBody @Valid User user) {
         //si el usuario ya existe en la base de datos
         if (users.get(user.getEmail()).isPresent()) {
@@ -185,6 +193,8 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    //solo puede el propio usuario
+    @PreAuthorize("#user == principal")
     ResponseEntity<Frienship> insert(@PathVariable("id") String user, @RequestBody User friend) {
         //si el amigo o el usuario no se encuentran en la base de datos
         if (!users.get(friend.getEmail()).isPresent() || !users.get(user).isPresent()) {
@@ -205,7 +215,7 @@ public class UserController {
         return ResponseEntity.of(friendships.insert(user, friend.getEmail()));
     }
 
-    //método PATCH para modificar una película
+    //método PATCH para modificar un usuario
     //link al servicio en users/{id}, consumes, pues necesita los datos del body
     @PatchMapping(
             path = "{id}",
@@ -213,6 +223,8 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
+    //solo puede el propio usuario
+    @PreAuthorize("#email == principal")
     ResponseEntity<User> patch(@PathVariable("id") String email, @RequestBody List<Map<String, Object>> updates) {
         //si el usuario no está presente en la base de datos
         if (!users.get(email).isPresent()) {
@@ -276,6 +288,8 @@ public class UserController {
             path = "{id}"
     )
     //recoge la variable del id, pues necesita buscar el email para eliminar el usuario
+    //solo puede el propio usuario
+    @PreAuthorize("#email == principal")
     ResponseEntity<User> delete(@PathVariable("id") String email) {
         //si el usuario existe, podremos eliminar el usuario
         if (!users.get(email).isPresent()) {
@@ -295,6 +309,8 @@ public class UserController {
     )
     //recoge la variable del user_id, pues necesita buscar el usuario que quiere eliminar el amigo
     //recoge la variable del id, pues necesita buscar la amistad que desea eliminarse
+    //solo puede el propio usuario
+    @PreAuthorize("#user == principal")
     ResponseEntity<Frienship> delete(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no se encuentra en la base de datos
         if (!users.get(user).isPresent()) {
