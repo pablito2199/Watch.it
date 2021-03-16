@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -146,21 +147,30 @@ public class FilmController {
     //si está logueado
     //@PreAuthorize("isAuthenticated()")
     ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
-        //si no se indica correctamente el id de la película o el email del usuario
-        if (assessment.getFilm().getId() == null && assessment.getUser().getEmail() == null) {
-            //devolvemos código de error 400 al intentar añadir una valoración sin película o usuario sin email
-            return ResponseEntity.badRequest().build();
+        //si no se indica correctamente el email del usuario
+        if (assessment.getUser().getEmail() == null) {
+            //devolvemos código de error 400 al intentar añadir una valoración con usuario sin email
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User field can not be empty");
         }
-        //si la película o el usuario no existen
-        if (!films.get(assessment.getFilm().getId()).isPresent() ||
-                !users.get(assessment.getUser().getEmail()).isPresent()) {
+        //si no se indica correctamente el id de la película
+        if (assessment.getFilm().getId() == null) {
+            //devolvemos código de error 400 al intentar añadir una valoración con película sin id
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Film field can not be empty");
+        }
+        //si la película existe
+        if (!films.get(assessment.getFilm().getId()).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+        }
+        //si el usuario no existe
+        if (!users.get(assessment.getUser().getEmail()).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         //si el usuario ya ha realizado una valoración de la película
         if (assessments.getAssessments(assessment.getFilm().getId(), assessment.getUser().getEmail()).isPresent()) {
             //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already wrote an assessment for that film");
         }
         //devolvemos la valoración insertada
         return ResponseEntity.of(assessments.insert(assessment));
@@ -180,20 +190,20 @@ public class FilmController {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
         }
         //si se intenta eliminar el título o el id
         if (updates.get(0).containsValue("remove") &&
                 (updates.get(0).containsValue("/title") || updates.get(0).containsValue("/id"))) {
             //devolvemos código de error 422 al intentar el eliminar el campo del título o id
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
         }
         try {
             //devolvemos la película modificada
             return ResponseEntity.of(films.patch(id, updates));
         } catch (JsonPatchException e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");
         }
     }
 
@@ -211,28 +221,28 @@ public class FilmController {
         //si la valoración no está presente en la base de datos
         if (!assessments.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
         }
         //si se intenta modificar el usuario, la película o el id
         if (updates.get(0).containsValue("replace") &&
                 (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
                         updates.get(0).containsValue("/_id"))) {
             //devolvemos código de error 422 al intentar modificar la película o usuario
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not modify the field");
         }
         //si se intenta eliminar el usuario, la película, la valoración o el id
         if (updates.get(0).containsValue("remove") &&
                 (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
                         updates.get(0).containsValue("/rating") || updates.get(0).containsValue("/_id"))) {
             //devolvemos código de error 422 al intentar el eliminar el campo de película, usuario, valoración o id
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
         }
         try {
             //devolvemos la valoración modificada
             return ResponseEntity.of(assessments.patch(id, updates));
         } catch (JsonPatchException e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");
         }
     }
 
@@ -248,7 +258,7 @@ public class FilmController {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
         }
         //eliminamos la película
         films.delete(id);
@@ -268,7 +278,7 @@ public class FilmController {
         //si la valoración no existe en la base de datos
         if (!assessments.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
         }
         //eliminamos la valoración
         assessments.delete(id);
