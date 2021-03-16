@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -48,7 +47,7 @@ public class UserController {
     )
     //cogemos la variable id del path y la identificamos con el email
     //solo puede admin, el propio usuario y sus amigos
-    @PreAuthorize("hasRole('ADMIN') or #email == principal or @userService.areFriends(#email, principal)")
+    @PreAuthorize("hasRole('ADMIN') or #email == principal or @friendshipService.areFriends(principal, #email)")
     public ResponseEntity<User> get(@PathVariable("id") String email) {
         //devolvemos el usuario obtenido
         return ResponseEntity.of(users.get(email));
@@ -109,7 +108,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo puede admin, el propio usuario y sus amigos
-    @PreAuthorize("hasRole('ADMIN') or #user == principal or @userService.areFriends(#user, principal)")
+    @PreAuthorize("hasRole('ADMIN') or #user == principal or @friendshipService.areFriends(principal, #user)")
     ResponseEntity<List<Assessment>> getAssessmentsUser(
             //parámetro a continuación de la interrogación para el filtrado
             @RequestParam(name = "user") String user
@@ -123,12 +122,14 @@ public class UserController {
         return ResponseEntity.of(assessments.getAssessmentsUser(user));
     }
 
-    //método GET al recuperar los amigos de un usuario
+    //método GET al recuperar un amigo de un usuario
     //link al servicio en users/{user}/friendships/{friend}, produces lo que devuelve
     @GetMapping(
             path = "{user}/friendships/{friendship}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    //solo pueden los usuarios implicados en la relación
+    @PreAuthorize("#user == principal and (@friendshipService.get(#friendship).get().user == principal or @friendshipService.get(#friendship).get().friend == principal)")
     ResponseEntity<Frienship> get(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si la amistad no se encuentra en la base de datos
         if (!friendships.get(friendship).isPresent()) {
@@ -152,6 +153,8 @@ public class UserController {
             path = "{id}/friendships",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    //si es el propio usuario
+    @PreAuthorize("#user == principal")
     ResponseEntity<List<String>> getFriends(@PathVariable("id") String user) {
         //si el usuario no existe
         if (!users.get(user).isPresent()) {
@@ -234,15 +237,15 @@ public class UserController {
         //si se trata de modificar el aniversario o el email
         if (updates.get(0).containsValue("replace") &&
                 (updates.get(0).containsValue("/email") || updates.get(0).containsValue("/birthday"))) {
-            //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 422 al intentar modificar un usuario con datos inválidos
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
         //si se trata de eliminar el email, nombre o aniversario
         if (updates.get(0).containsValue("remove") &&
                 (updates.get(0).containsValue("/email") || updates.get(0).containsValue("/birthday") ||
                         updates.get(0).containsValue("/name"))) {
-            //devolvemos código de error 400 al intentar modificar un usuario con datos inválidos
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 422 al intentar modificar un usuario con datos inválidos
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
         try {
             //devolvemos el usuario modificado
@@ -261,6 +264,8 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
+    //si amigo es el propio usuario
+    @PreAuthorize("#user == principal")
     ResponseEntity<Frienship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no está presente en la base de datos
         if (!users.get(user).isPresent()) {

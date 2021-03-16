@@ -96,8 +96,4 @@ public class UserService {
     public void delete(String email) {
         users.deleteById(email);
     }
-
-    public Boolean areFriends(String... users) {
-        return Arrays.stream(users).allMatch(it -> it.contains("@test.com"));
-    }
 }

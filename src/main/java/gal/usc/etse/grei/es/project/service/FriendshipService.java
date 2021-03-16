@@ -31,14 +31,18 @@ public class FriendshipService {
         return friendships.findById(id);
     }
 
-    //devuelve la lista de usuarios paginados
+    //devuelve la lista de amigos
     public List<String> getFriends(String user) {
         Criteria criteria = Criteria.where("_id").exists(true);
         //indicamos que el usuario o friend debe ser user
         criteria.and("user").is(user);
-        criteria.and("friend").is(user);
         Query query = Query.query(criteria);
+        //añadimos primero en los que se encuentre en user
         List<Frienship> result = mongo.find(query, Frienship.class);
+        criteria.and("friend").is(user);
+        query = Query.query(criteria);
+        //añadimos a continuación en los que se encuentre como friend
+        result.addAll(mongo.find(query, Frienship.class));
         List<String> friends = new ArrayList<>();
         //añadimos todos los amigos obtenidos
         for (Frienship f : result) {
@@ -77,5 +81,11 @@ public class FriendshipService {
     //elimina la valoración con el id correspondiente
     public void delete(String id) {
         friendships.deleteById(id);
+    }
+
+    //comprueba si dos usuarios son amigos
+    public Boolean areFriends(String user, String friend) {
+        //si está contenido en la lista, entonces son amigos
+        return this.getFriends(user).contains(friend);
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -177,7 +176,7 @@ public class FilmController {
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo se permite a los administradores
     @PreAuthorize("hasRole('ADMIN')")
-    ResponseEntity<Film> patch(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) throws JsonPatchException {
+    ResponseEntity<Film> patch(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -186,8 +185,8 @@ public class FilmController {
         //si se intenta eliminar el título o el id
         if (updates.get(0).containsValue("remove") &&
                 (updates.get(0).containsValue("/title") || updates.get(0).containsValue("/id"))) {
-            //devolvemos código de error 400 al intentar el eliminar el campo del título o id
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 422 al intentar el eliminar el campo del título o id
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
         try {
             //devolvemos la película modificada
@@ -207,8 +206,8 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo el propio usuario
-    @PreAuthorize("assessmentService.get(id).get().user == principal")
-    ResponseEntity<Assessment> patchAssessment(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) throws JsonPatchException {
+    @PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
+    ResponseEntity<Assessment> patchAssessment(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
         //si la valoración no está presente en la base de datos
         if (!assessments.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -218,15 +217,15 @@ public class FilmController {
         if (updates.get(0).containsValue("replace") &&
                 (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
                         updates.get(0).containsValue("/_id"))) {
-            //devolvemos código de error 400 al intentar modificar la película o usuario
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 422 al intentar modificar la película o usuario
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
         //si se intenta eliminar el usuario, la película, la valoración o el id
         if (updates.get(0).containsValue("remove") &&
                 (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
                         updates.get(0).containsValue("/rating") || updates.get(0).containsValue("/_id"))) {
-            //devolvemos código de error 400 al intentar el eliminar el campo de película, usuario, valoración o id
-            return ResponseEntity.badRequest().build();
+            //devolvemos código de error 422 al intentar el eliminar el campo de película, usuario, valoración o id
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
         try {
             //devolvemos la valoración modificada
@@ -264,7 +263,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
     //solo pueden admin y el propio usuario
-    @PreAuthorize("hasRole('ADMIN') or assessmentService.get(id).get().user == principal")
+    @PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> deleteAssessment(@PathVariable("id") String id) {
         //si la valoración no existe en la base de datos
         if (!assessments.get(id).isPresent()) {
