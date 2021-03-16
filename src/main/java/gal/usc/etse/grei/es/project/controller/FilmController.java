@@ -46,7 +46,7 @@ public class FilmController {
     )
     //cogemos la variable id del path y la identificamos con el id
     //si está logueado
-    @PreAuthorize("isAuthenticated()")
+    //@PreAuthorize("isAuthenticated()")
     ResponseEntity<Film> get(@PathVariable("id") String id) {
         //recuperamos la película obtenida
         return ResponseEntity.of(films.get(id));
@@ -59,7 +59,7 @@ public class FilmController {
     )
     //recogemos todas las películas paginando con los requestparam
     //si está logueado
-    @PreAuthorize("isAuthenticated()")
+    //@PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<Film>> get(
             //parámetros a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -114,7 +114,7 @@ public class FilmController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si está logueado
-    @PreAuthorize("isAuthenticated()")
+    //@PreAuthorize("isAuthenticated()")
     ResponseEntity<List<Assessment>> getAssessmentsFilm(
             //parámetro a continuación de la interrogación para el filtrado
             @RequestParam(name = "film") String film
@@ -130,7 +130,7 @@ public class FilmController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo se permite a los administradores
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
         //devolvemos la película insertada
         return ResponseEntity.of(films.insert(film));
@@ -144,7 +144,7 @@ public class FilmController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si está logueado
-    @PreAuthorize("isAuthenticated()")
+    //@PreAuthorize("isAuthenticated()")
     ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
         //si no se indica correctamente el id de la película o el email del usuario
         if (assessment.getFilm().getId() == null && assessment.getUser().getEmail() == null) {
@@ -175,7 +175,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo se permite a los administradores
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> patch(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
@@ -206,7 +206,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo el propio usuario
-    @PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
+    //@PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> patchAssessment(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
         //si la valoración no está presente en la base de datos
         if (!assessments.get(id).isPresent()) {
@@ -243,7 +243,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la película
     //solo se permite a los administradores
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> delete(@PathVariable("id") String id) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
@@ -263,7 +263,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
     //solo pueden admin y el propio usuario
-    @PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
+    //@PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> deleteAssessment(@PathVariable("id") String id) {
         //si la valoración no existe en la base de datos
         if (!assessments.get(id).isPresent()) {
