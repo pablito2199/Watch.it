@@ -1,7 +1,7 @@
 package gal.usc.etse.grei.es.project.service;
 
 import gal.usc.etse.grei.es.project.model.Date;
-import gal.usc.etse.grei.es.project.model.Frienship;
+import gal.usc.etse.grei.es.project.model.Friendship;
 import gal.usc.etse.grei.es.project.repository.FriendshipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -27,12 +27,12 @@ public class FriendshipService {
     }
 
     //devuelve la amistad con el id correspondiente
-    public Optional<Frienship> get(String id) {
+    public Optional<Friendship> get(String id) {
         return friendships.findById(id);
     }
 
     //devuelve todas las valoraciones
-    public List<Frienship> getAll() {
+    public List<Friendship> getAll() {
         return friendships.findAll();
     }
 
@@ -43,14 +43,14 @@ public class FriendshipService {
         criteria.and("user").is(user);
         Query query = Query.query(criteria);
         //añadimos primero en los que se encuentre en user
-        List<Frienship> result = mongo.find(query, Frienship.class);
+        List<Friendship> result = mongo.find(query, Friendship.class);
         criteria.and("friend").is(user);
         query = Query.query(criteria);
         //añadimos a continuación en los que se encuentre como friend
-        result.addAll(mongo.find(query, Frienship.class));
+        result.addAll(mongo.find(query, Friendship.class));
         List<String> friends = new ArrayList<>();
         //añadimos todos los amigos obtenidos
-        for (Frienship f : result) {
+        for (Friendship f : result) {
             friends.add(f.getFriend());
         }
 
@@ -58,29 +58,29 @@ public class FriendshipService {
     }
 
     //modifica la amistad
-    public Optional<Frienship> put(String id) {
+    public Optional<Friendship> put(String id) {
         //obtenemos la fecha actual
         LocalDate currentDate = LocalDate.now();
         Date since = new Date(currentDate.getDayOfMonth(), currentDate.getMonthValue(), currentDate.getYear());
         //si la amistad se encuentra presente en la base de datos
         if (this.get(id).isPresent()) {
             //obtenemos la amistad de la base de datos
-            Frienship frienship = this.get(id).get();
+            Friendship friendship = this.get(id).get();
             //indicamos amistad aceptada y fecha actual
-            frienship.setConfirmed(true).setSince(since);
+            friendship.setConfirmed(true).setSince(since);
             //actualizamos la amistad
-            return Optional.of(friendships.save(frienship));
+            return Optional.of(friendships.save(friendship));
         }
         //devolvemos el objeto vacío
         return Optional.empty();
     }
 
     //inserta la amistad entre usuarios
-    public Optional<Frienship> insert(String user, String friend) {
+    public Friendship insert(String user, String friend) {
         //actualizamos los campos de usuario que crea la amistad y su amigo
-        Frienship frienship = new Frienship().setUser(user).setFriend(friend);
+        Friendship friendship = new Friendship().setUser(user).setFriend(friend);
         //devolvemos el usuario
-        return Optional.of(friendships.insert(frienship));
+        return friendships.insert(friendship);
     }
 
     //elimina la valoración con el id correspondiente

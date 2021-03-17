@@ -2,8 +2,7 @@ package gal.usc.etse.grei.es.project.controller;
 
 import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
-import gal.usc.etse.grei.es.project.model.Film;
-import gal.usc.etse.grei.es.project.model.Frienship;
+import gal.usc.etse.grei.es.project.model.Friendship;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FriendshipService;
@@ -22,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -198,7 +198,7 @@ public class UserController {
     )
     //solo pueden los usuarios implicados en la relación
     //@PreAuthorize("#user == principal and (@friendshipService.get(#friendship).get().user == principal or @friendshipService.get(#friendship).get().friend == principal)")
-    ResponseEntity<Frienship> get(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+    ResponseEntity<Friendship> get(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si la amistad no se encuentra en la base de datos
         if (!friendships.get(friendship).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -214,8 +214,42 @@ public class UserController {
         if (friendships.get(friendship).get().getConfirmed() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship not accepted yet");
         }
-        //devolvemos la amistad obtenida
-        return ResponseEntity.of(friendships.get(friendship));
+        //obtenemos la amistad
+        Optional<Friendship> result = friendships.get(friendship);
+
+        //si la amistad no se encuentra en la base de datos
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
+        }
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).get(result.get().getId())
+        ).withSelfRel();
+        Link all = linkTo(
+                methodOn(UserController.class).getFriends(result.get().getUser())
+        ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
+        Link userLink = linkTo(
+                methodOn(UserController.class).get(user)
+        ).withSelfRel();
+        Link friendLink;
+        if (user.equals(result.get().getUser())) {
+            friendLink = linkTo(
+                    methodOn(UserController.class).get(result.get().getFriend())
+            ).withSelfRel();
+        } else {
+            friendLink = linkTo(
+                    methodOn(UserController.class).get(result.get().getUser())
+            ).withSelfRel();
+        }
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .header(HttpHeaders.LINK, userLink.toString())
+                .header(HttpHeaders.LINK, friendLink.toString())
+                .body(result.get());
     }
 
     //método GET al recuperar los amigos de un usuario
@@ -285,7 +319,7 @@ public class UserController {
     )
     //solo puede el propio usuario
     //@PreAuthorize("#user == principal")
-    ResponseEntity<Frienship> insert(@PathVariable("id") String user, @RequestBody User friend) {
+    ResponseEntity<Friendship> insert(@PathVariable("id") String user, @RequestBody User friend) {
         //si el amigo no se encuentra en la base de datos
         if (!users.get(friend.getEmail()).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -309,8 +343,22 @@ public class UserController {
             //devolvemos código de error 409 al producirse un conflicto
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Friendship already exists");
         }
-        //devolvemos la amistad creada
-        return ResponseEntity.of(friendships.insert(user, friend.getEmail()));
+        //creamos la amistad
+        Friendship result = friendships.insert(user, friend.getEmail());
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).get(result.getId())
+        ).withSelfRel();
+        Link all = linkTo(
+                methodOn(UserController.class).getFriends(result.getUser())
+        ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .body(result);
     }
 
     //método PATCH para modificar un usuario
@@ -377,7 +425,7 @@ public class UserController {
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //si amigo es el propio usuario
     //@PreAuthorize("#user == principal")
-    ResponseEntity<Frienship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+    ResponseEntity<Friendship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no está presente en la base de datos
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -399,8 +447,42 @@ public class UserController {
             //devolvemos código de error 400
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship already exists");
         }
-        //devolvemos la amistad modificada
-        return ResponseEntity.of(friendships.put(friendship));
+        //modificamos la amistad
+        Optional<Friendship> result = friendships.put(friendship);
+
+        //si la amistad no se encuentra en la base de datos
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
+        }
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).get(result.get().getId())
+        ).withSelfRel();
+        Link all = linkTo(
+                methodOn(UserController.class).getFriends(result.get().getUser())
+        ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
+        Link userLink = linkTo(
+                methodOn(UserController.class).get(user)
+        ).withSelfRel();
+        Link friendLink;
+        if (user.equals(result.get().getUser())) {
+            friendLink = linkTo(
+                    methodOn(UserController.class).get(result.get().getFriend())
+            ).withSelfRel();
+        } else {
+            friendLink = linkTo(
+                    methodOn(UserController.class).get(result.get().getUser())
+            ).withSelfRel();
+        }
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .header(HttpHeaders.LINK, userLink.toString())
+                .header(HttpHeaders.LINK, friendLink.toString())
+                .body(result.get());
     }
 
     //método DELETE para eliminar un usuario
@@ -426,7 +508,7 @@ public class UserController {
             }
         }
         //eliminamos las amistades de dicho usuario
-        for (Frienship f : friendships.getAll()) {
+        for (Friendship f : friendships.getAll()) {
             if (f.getUser().equals(email)) {
                 friendships.delete(f.getId());
             }
@@ -444,7 +526,7 @@ public class UserController {
     //recoge la variable del id, pues necesita buscar la amistad que desea eliminarse
     //solo puede el propio usuario
     //@PreAuthorize("#user == principal")
-    ResponseEntity<Frienship> delete(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+    ResponseEntity<Friendship> delete(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no se encuentra en la base de datos
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda

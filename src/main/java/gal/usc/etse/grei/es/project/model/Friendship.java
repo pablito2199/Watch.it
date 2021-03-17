@@ -9,7 +9,7 @@ import java.util.StringJoiner;
 
 @Document(collection = "friends")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Frienship {
+public class Friendship {
     @Id
     private String id;
     private String user;
@@ -17,10 +17,10 @@ public class Frienship {
     private Boolean confirmed;
     private Date since;
 
-    public Frienship() {
+    public Friendship() {
     }
 
-    public Frienship(String id, String user, String friend, Boolean confirmed, Date since) {
+    public Friendship(String id, String user, String friend, Boolean confirmed, Date since) {
         this.id = id;
         this.user = user;
         this.friend = friend;
@@ -48,27 +48,27 @@ public class Frienship {
         return since;
     }
 
-    public Frienship setId(String id) {
+    public Friendship setId(String id) {
         this.id = id;
         return this;
     }
 
-    public Frienship setUser(String user) {
+    public Friendship setUser(String user) {
         this.user = user;
         return this;
     }
 
-    public Frienship setFriend(String friend) {
+    public Friendship setFriend(String friend) {
         this.friend = friend;
         return this;
     }
 
-    public Frienship setConfirmed(Boolean confirmed) {
+    public Friendship setConfirmed(Boolean confirmed) {
         this.confirmed = confirmed;
         return this;
     }
 
-    public Frienship setSince(Date since) {
+    public Friendship setSince(Date since) {
         this.since = since;
         return this;
     }
@@ -77,8 +77,8 @@ public class Frienship {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Frienship frienship = (Frienship) o;
-        return Objects.equals(id, frienship.id) && Objects.equals(user, frienship.user) && Objects.equals(friend, frienship.friend) && Objects.equals(confirmed, frienship.confirmed) && Objects.equals(since, frienship.since);
+        Friendship friendship = (Friendship) o;
+        return Objects.equals(id, friendship.id) && Objects.equals(user, friendship.user) && Objects.equals(friend, friendship.friend) && Objects.equals(confirmed, friendship.confirmed) && Objects.equals(since, friendship.since);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class Frienship {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", Frienship.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", Friendship.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("user='" + user + "'")
                 .add("friend='" + friend + "'")
