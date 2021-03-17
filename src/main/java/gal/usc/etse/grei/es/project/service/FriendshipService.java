@@ -58,21 +58,17 @@ public class FriendshipService {
     }
 
     //modifica la amistad
-    public Optional<Friendship> put(String id) {
+    public Friendship put(String id) {
         //obtenemos la fecha actual
         LocalDate currentDate = LocalDate.now();
         Date since = new Date(currentDate.getDayOfMonth(), currentDate.getMonthValue(), currentDate.getYear());
-        //si la amistad se encuentra presente en la base de datos
-        if (this.get(id).isPresent()) {
-            //obtenemos la amistad de la base de datos
-            Friendship friendship = this.get(id).get();
-            //indicamos amistad aceptada y fecha actual
-            friendship.setConfirmed(true).setSince(since);
-            //actualizamos la amistad
-            return Optional.of(friendships.save(friendship));
-        }
-        //devolvemos el objeto vacío
-        return Optional.empty();
+        //obtenemos la amistad de la base de datos
+        Friendship friendship = this.get(id).get();
+        //indicamos amistad aceptada y fecha actual
+        friendship.setConfirmed(true).setSince(since);
+        //actualizamos la amistad
+        return friendships.save(friendship);
+
     }
 
     //inserta la amistad entre usuarios

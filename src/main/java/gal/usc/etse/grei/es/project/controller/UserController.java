@@ -448,31 +448,26 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship already exists");
         }
         //modificamos la amistad
-        Optional<Friendship> result = friendships.put(friendship);
+        Friendship result = friendships.put(friendship);
 
-        //si la amistad no se encuentra en la base de datos
-        if (!result.isPresent()) {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
-        }
         //creamos los enlaces correspondientes
         Link self = linkTo(
-                methodOn(UserController.class).get(result.get().getId())
+                methodOn(UserController.class).get(result.getId())
         ).withSelfRel();
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(result.get().getUser())
+                methodOn(UserController.class).getFriends(result.getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
         Link userLink = linkTo(
                 methodOn(UserController.class).get(user)
         ).withSelfRel();
         Link friendLink;
-        if (user.equals(result.get().getUser())) {
+        if (user.equals(result.getUser())) {
             friendLink = linkTo(
-                    methodOn(UserController.class).get(result.get().getFriend())
+                    methodOn(UserController.class).get(result.getFriend())
             ).withSelfRel();
         } else {
             friendLink = linkTo(
-                    methodOn(UserController.class).get(result.get().getUser())
+                    methodOn(UserController.class).get(result.getUser())
             ).withSelfRel();
         }
 
@@ -482,7 +477,7 @@ public class UserController {
                 .header(HttpHeaders.LINK, all.toString())
                 .header(HttpHeaders.LINK, userLink.toString())
                 .header(HttpHeaders.LINK, friendLink.toString())
-                .body(result.get());
+                .body(result);
     }
 
     //método DELETE para eliminar un usuario

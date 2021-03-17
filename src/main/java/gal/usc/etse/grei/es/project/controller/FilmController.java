@@ -262,8 +262,22 @@ public class FilmController {
             //devolvemos código de error 409 al intentar añadir una valoración cuando ya se ha insertado una por ese usuario
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User already wrote an assessment for that film");
         }
-        //devolvemos la valoración insertada
-        return ResponseEntity.of(assessments.insert(assessment));
+        //insertamos la valoración
+        Assessment result = assessments.insert(assessment);
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(FilmController.class).get(result.getFilm().getId())
+        ).withSelfRel();
+        Link all = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(result.getFilm().getId())
+        ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .body(result);
     }
 
     //método PUT para modificar una película
@@ -345,8 +359,26 @@ public class FilmController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
         }
         try {
-            //devolvemos la valoración modificada
-            return ResponseEntity.of(assessments.patch(id, updates));
+            //modificamos la valoración
+            Assessment result = assessments.patch(id, updates);
+
+            //creamos los enlaces correspondientes
+            Link self = linkTo(
+                    methodOn(FilmController.class).get(result.getFilm().getId())
+            ).withSelfRel();
+            Link allFilms = linkTo(
+                    methodOn(FilmController.class).getAssessmentsFilm(result.getFilm().getId())
+            ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
+            Link allUsers = linkTo(
+                    methodOn(UserController.class).get(result.getUser().getEmail())
+            ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
+
+            //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.LINK, self.toString())
+                    .header(HttpHeaders.LINK, allFilms.toString())
+                    .header(HttpHeaders.LINK, allUsers.toString())
+                    .body(result);
         } catch (JsonPatchException e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");

@@ -79,7 +79,7 @@ public class AssessmentService {
     }
 
     //inserta la valoración
-    public Optional<Assessment> insert(Assessment assessment) {
+    public Assessment insert(Assessment assessment) {
         //si la película está presente en la base de datos, indicamos el título de la película
         if (films.get(assessment.getFilm().getId()).isPresent()) {
             assessment.getFilm().setTitle(films.get(assessment.getFilm().getId()).get().getTitle());
@@ -88,11 +88,11 @@ public class AssessmentService {
         if (users.get(assessment.getUser().getEmail()).isPresent()) {
             assessment.getUser().setName(users.get(assessment.getUser().getEmail()).get().getName());
         }
-        return Optional.of(assessments.insert(assessment));
+        return assessments.insert(assessment);
     }
 
     //modifica la valoración
-    public Optional<Assessment> patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
+    public Assessment patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
         //si la valoración se encuentra presente en la base de datos
         if (this.get(id).isPresent()) {
             //obtenemos la valoración de la base de datos
@@ -100,10 +100,9 @@ public class AssessmentService {
             //actualizamos los datos con el patch
             assessment = patchMethod.patch(assessment, updates);
             //actualizamos en la base de datos
-            return Optional.of(assessments.save(assessment));
+            return assessments.save(assessment);
         }
-        //devolvemos el objeto vacío
-        return Optional.empty();
+        return null;
     }
 
     //elimina la valoración con el id correspondiente
