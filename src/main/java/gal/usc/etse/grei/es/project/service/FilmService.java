@@ -93,12 +93,16 @@ public class FilmService {
 
     //modifica la película
     public Film patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
-        //obtenemos la película de la base de datos
-        Film film = this.get(id).get();
-        //actualizamos los datos con el patch
-        film = patchMethod.patch(film, updates);
-        //actualizamos en la base de datos
-        return films.save(film);
+        //si la película está presente
+        if (this.get(id).isPresent()) {
+            //obtenemos la película de la base de datos
+            Film film = this.get(id).get();
+            //actualizamos los datos con el patch
+            film = patchMethod.patch(film, updates);
+            //actualizamos en la base de datos
+            return films.save(film);
+        }
+        return null;
     }
 
     //elimina la película con el id correspondiente

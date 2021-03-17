@@ -2,6 +2,7 @@ package gal.usc.etse.grei.es.project.controller;
 
 import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.Frienship;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
@@ -9,8 +10,12 @@ import gal.usc.etse.grei.es.project.service.FriendshipService;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +23,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 //link al servicio que se encuentra en /users
 @RestController
@@ -52,8 +57,29 @@ public class UserController {
     //solo puede admin, el propio usuario y sus amigos
     //@PreAuthorize("hasRole('ADMIN') or #email == principal or @friendshipService.areFriends(principal, #email)")
     public ResponseEntity<User> get(@PathVariable("id") String email) {
-        //devolvemos el usuario obtenido
-        return ResponseEntity.of(users.get(email));
+        //recuperamos el usuario obtenido
+        Optional<User> result = users.get(email);
+
+        //si no se encuentra el usuario
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).get(email)
+        ).withSelfRel();
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        Link all = linkTo(
+                methodOn(UserController.class).get(0, 0, sort, null, null)
+        ).withRel(relationProvider.getItemResourceRelFor(User.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .body(result.get());
     }
 
     //método GET al recuperar usuarios
@@ -100,8 +126,47 @@ public class UserController {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        //devolvemos los usuarios obtenidos
-        return ResponseEntity.of(users.get(page, size, Sort.by(criteria), email, name));
+        Optional<Page<User>> result = users.get(page, size, Sort.by(criteria), email, name);
+
+        //si no hay ningún usuario guardado
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Users not found");
+        }
+        //guardamos los resultados obtenidos
+        Page<User> data = result.get();
+        //paginamos los datos obtenidos
+        Pageable metadata = data.getPageable();
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).get(page, size, sort, email, name)
+        ).withSelfRel();
+        Link first = linkTo(
+                methodOn(UserController.class).get(metadata.first().getPageNumber(), size, sort, email, name)
+        ).withRel(IanaLinkRelations.FIRST);
+        Link next = linkTo(
+                methodOn(UserController.class).get(metadata.next().getPageNumber(), size, sort, email, name)
+        ).withRel(IanaLinkRelations.NEXT);
+        Link previous = linkTo(
+                methodOn(UserController.class).get(metadata.previousOrFirst().getPageNumber(), size, sort, email, name)
+        ).withRel(IanaLinkRelations.PREVIOUS);
+        Link last = linkTo(
+                methodOn(UserController.class).get(data.getTotalPages() - 1, size, sort, email, name)
+        ).withRel(IanaLinkRelations.LAST);
+        Link one = linkTo(
+                methodOn(UserController.class).get(null)
+        ).withRel(relationProvider.getItemResourceRelFor(User.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, first.toString())
+                .header(HttpHeaders.LINK, next.toString())
+                .header(HttpHeaders.LINK, previous.toString())
+                .header(HttpHeaders.LINK, last.toString())
+                .header(HttpHeaders.LINK, one.toString())
+                .body(result.get());
     }
 
     //método GET al recuperar valoraciones de un usuario
@@ -191,8 +256,24 @@ public class UserController {
             //devolvemos código de error 409 al haber un conflicto, pues ya existe un usuario con ese correo
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists");
         }
-        //devolvemos el usuario insertado
-        return ResponseEntity.of(users.insert(user));
+        //insertamos el usuario
+        User result = users.insert(user);
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).get(result.getEmail())
+        ).withSelfRel();
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        Link all = linkTo(
+                methodOn(UserController.class).get(0, 0, sort, null, null)
+        ).withRel(relationProvider.getItemResourceRelFor(User.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .body(result);
     }
 
     //método POST al crear una nueva amistad
@@ -262,8 +343,24 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
         }
         try {
-            //devolvemos el usuario modificado
-            return ResponseEntity.of(users.patch(email, updates));
+            //modificamos el usuario
+            User result = users.patch(email, updates);
+
+            //creamos los enlaces correspondientes
+            Link self = linkTo(
+                    methodOn(UserController.class).get(result.getEmail())
+            ).withSelfRel();
+            List<String> sort = new ArrayList<>();
+            sort.add("");
+            Link all = linkTo(
+                    methodOn(UserController.class).get(0, 0, sort, null, null)
+            ).withRel(relationProvider.getItemResourceRelFor(User.class));
+
+            //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.LINK, self.toString())
+                    .header(HttpHeaders.LINK, all.toString())
+                    .body(result);
         } catch (JsonPatchException e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");

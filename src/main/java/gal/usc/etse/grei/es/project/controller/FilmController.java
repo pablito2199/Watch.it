@@ -211,7 +211,7 @@ public class FilmController {
 
         //creamos los enlaces correspondientes
         Link self = linkTo(
-                methodOn(FilmController.class).insert(result)
+                methodOn(FilmController.class).get(result.getId())
         ).withSelfRel();
         List<String> sort = new ArrayList<>();
         sort.add("");
@@ -294,7 +294,7 @@ public class FilmController {
 
             //creamos los enlaces correspondientes
             Link self = linkTo(
-                    methodOn(FilmController.class).patch(id, updates)
+                    methodOn(FilmController.class).get(id)
             ).withSelfRel();
             List<String> sort = new ArrayList<>();
             sort.add("");

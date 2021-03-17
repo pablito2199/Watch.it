@@ -57,7 +57,7 @@ public class UserService {
     }
 
     //inserta el usuario
-    public Optional<User> insert(User user) {
+    public User insert(User user) {
         //codificamos la contraseña
         user.setPassword(encoder.encode(user.getPassword()));
         //insertamos el usuario
@@ -65,12 +65,12 @@ public class UserService {
         //borramos la contraseña para que no se muestre
         user.setPassword(null);
         //devolvemos el usuario
-        return Optional.of(user);
+        return user;
     }
 
     //modifica el usuario
-    public Optional<User> patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
-        //si el usuario se encuentra presente en la base de datos
+    public User patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
+        //si el usuario está presente
         if (this.get(id).isPresent()) {
             //obtenemos el usuario de la base de datos
             User user = this.get(id).get();
@@ -86,10 +86,9 @@ public class UserService {
             //borramos la contraseña para que no se muestre
             user.setPassword(null);
             //actualizamos en la base de datos y retornamos el usuario
-            return Optional.of(user);
+            return user;
         }
-        //devolvemos el objeto vacío
-        return Optional.empty();
+        return null;
     }
 
     //elimina el usuario con el email correspondiente
