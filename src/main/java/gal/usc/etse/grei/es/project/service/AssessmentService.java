@@ -36,6 +36,11 @@ public class AssessmentService {
         return assessments.findById(id);
     }
 
+    //devuelve todas las valoraciones
+    public List<Assessment> getAll() {
+        return assessments.findAll();
+    }
+
     //devuelve las valoraciones de la película correspondiente
     public Optional<List<Assessment>> getAssessments(String film, String user) {
         Criteria criteria = Criteria.where("_id").exists(true);

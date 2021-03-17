@@ -262,6 +262,12 @@ public class FilmController {
         }
         //eliminamos la película
         films.delete(id);
+        //eliminamos los comentarios de dicha película
+        for (Assessment a : assessments.getAll()) {
+            if (a.getFilm().getId().equals(id)) {
+                assessments.delete(a.getId());
+            }
+        }
         //devolvemos código de error 200 al ir todo bien
         return ResponseEntity.noContent().build();
     }

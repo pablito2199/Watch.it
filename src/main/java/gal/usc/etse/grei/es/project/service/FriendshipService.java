@@ -31,6 +31,11 @@ public class FriendshipService {
         return friendships.findById(id);
     }
 
+    //devuelve todas las valoraciones
+    public List<Frienship> getAll() {
+        return friendships.findAll();
+    }
+
     //devuelve la lista de amigos
     public List<String> getFriends(String user) {
         Criteria criteria = Criteria.where("_id").exists(true);

@@ -320,6 +320,18 @@ public class UserController {
         }
         //eliminamos el usuario
         users.delete(email);
+        //eliminamos los comentarios de dicho usuario
+        for (Assessment a : assessments.getAll()) {
+            if (a.getUser().getEmail().equals(email)) {
+                assessments.delete(a.getId());
+            }
+        }
+        //eliminamos las amistades de dicho usuario
+        for (Frienship f : friendships.getAll()) {
+            if (f.getUser().equals(email)) {
+                friendships.delete(f.getId());
+            }
+        }
         //devolvemos código de error 204 al ir todo bien
         return ResponseEntity.noContent().build();
     }
