@@ -87,23 +87,18 @@ public class FilmService {
     }
 
     //inserta la película
-    public Optional<Film> insert(Film film) {
-        return Optional.of(films.insert(film));
+    public Film insert(Film film) {
+        return films.insert(film);
     }
 
     //modifica la película
-    public Optional<Film> patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
-        //si la película se encuentra presente en la base de datos
-        if (this.get(id).isPresent()) {
-            //obtenemos la película de la base de datos
-            Film film = this.get(id).get();
-            //actualizamos los datos con el patch
-            film = patchMethod.patch(film, updates);
-            //actualizamos en la base de datos
-            return Optional.of(films.save(film));
-        }
-        //devolvemos el objeto vacío
-        return Optional.empty();
+    public Film patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
+        //obtenemos la película de la base de datos
+        Film film = this.get(id).get();
+        //actualizamos los datos con el patch
+        film = patchMethod.patch(film, updates);
+        //actualizamos en la base de datos
+        return films.save(film);
     }
 
     //elimina la película con el id correspondiente

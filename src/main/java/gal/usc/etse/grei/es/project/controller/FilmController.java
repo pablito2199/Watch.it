@@ -9,19 +9,24 @@ import gal.usc.etse.grei.es.project.service.FilmService;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.LinkRelationProvider;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 //link al servicio que se encuentra en /films
 @RestController
@@ -30,13 +35,15 @@ public class FilmController {
     private final AssessmentService assessments;
     private final FilmService films;
     private final UserService users;
+    private final LinkRelationProvider relationProvider;
 
     //Instancias
     @Autowired
-    public FilmController(AssessmentService assessments, FilmService films, UserService users) {
+    public FilmController(AssessmentService assessments, FilmService films, UserService users, LinkRelationProvider relationProvider) {
         this.assessments = assessments;
         this.films = films;
         this.users = users;
+        this.relationProvider = relationProvider;
     }
 
     //método GET al recuperar una película
@@ -49,8 +56,30 @@ public class FilmController {
     //si está logueado
     //@PreAuthorize("isAuthenticated()")
     ResponseEntity<Film> get(@PathVariable("id") String id) {
-        //recuperamos la película obtenida
-        return ResponseEntity.of(films.get(id));
+        //recuperamos la película indicada
+        Optional<Film> result = films.get(id);
+
+        //si no se encuentra la película
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+        }
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(FilmController.class).get(id)
+        ).withSelfRel();
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        Link all = linkTo(
+                methodOn(FilmController.class).get(0, 0, sort, null, null, null, null,
+                        null, null, null, null)
+        ).withRel(relationProvider.getItemResourceRelFor(Film.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .body(result.get());
     }
 
     //método GET al recuperar películas
@@ -103,9 +132,53 @@ public class FilmController {
                 .collect(Collectors.toList());
 
         Date releaseDate = new Date(day, month, year);
-        //devolvemos los usuarios obtenidos
-        return ResponseEntity.of(films.get(page, size, Sort.by(criteria),
-                keywords, genres, producers, crew, cast, releaseDate));
+        Optional<Page<Film>> result = films.get(page, size, Sort.by(criteria),
+                keywords, genres, producers, crew, cast, releaseDate);
+
+        //si no hay ninguna película guardada
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Films not found");
+        }
+        //guardamos los resultados obtenidos
+        Page<Film> data = result.get();
+        //paginamos los datos obtenidos
+        Pageable metadata = data.getPageable();
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(FilmController.class).get(page, size, sort, keywords, genres, producers,
+                        crew, cast, day, month, year)
+        ).withSelfRel();
+        Link first = linkTo(
+                methodOn(FilmController.class).get(metadata.first().getPageNumber(), size, sort, keywords,
+                        genres, producers, crew, cast, day, month, year)
+        ).withRel(IanaLinkRelations.FIRST);
+        Link next = linkTo(
+                methodOn(FilmController.class).get(metadata.next().getPageNumber(), size, sort, keywords,
+                        genres, producers, crew, cast, day, month, year)
+        ).withRel(IanaLinkRelations.NEXT);
+        Link previous = linkTo(
+                methodOn(FilmController.class).get(metadata.previousOrFirst().getPageNumber(), size, sort, keywords,
+                        genres, producers, crew, cast, day, month, year)
+        ).withRel(IanaLinkRelations.PREVIOUS);
+        Link last = linkTo(
+                methodOn(FilmController.class).get(data.getTotalPages() - 1, size, sort, keywords,
+                        genres, producers, crew, cast, day, month, year)
+        ).withRel(IanaLinkRelations.LAST);
+        Link one = linkTo(
+                methodOn(FilmController.class).get(null)
+        ).withRel(relationProvider.getItemResourceRelFor(Film.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, first.toString())
+                .header(HttpHeaders.LINK, next.toString())
+                .header(HttpHeaders.LINK, previous.toString())
+                .header(HttpHeaders.LINK, last.toString())
+                .header(HttpHeaders.LINK, one.toString())
+                .body(result.get());
     }
 
     //método GET al recuperar valoraciones de una película
@@ -133,8 +206,25 @@ public class FilmController {
     //solo se permite a los administradores
     //@PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
-        //devolvemos la película insertada
-        return ResponseEntity.of(films.insert(film));
+        //guardamos la película en la base de datos
+        Film result = films.insert(film);
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(FilmController.class).insert(result)
+        ).withSelfRel();
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        Link all = linkTo(
+                methodOn(FilmController.class).get(0, 0, sort, null, null, null, null,
+                        null, null, null, null)
+        ).withRel(relationProvider.getItemResourceRelFor(Film.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, all.toString())
+                .body(result);
     }
 
     //método POST al crear una nueva valoración sobre una película
@@ -199,8 +289,25 @@ public class FilmController {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
         }
         try {
-            //devolvemos la película modificada
-            return ResponseEntity.of(films.patch(id, updates));
+            //modificamos la película en la base de datos
+            Film result = films.patch(id, updates);
+
+            //creamos los enlaces correspondientes
+            Link self = linkTo(
+                    methodOn(FilmController.class).patch(id, updates)
+            ).withSelfRel();
+            List<String> sort = new ArrayList<>();
+            sort.add("");
+            Link all = linkTo(
+                    methodOn(FilmController.class).get(0, 0, sort, null, null, null, null,
+                            null, null, null, null)
+            ).withRel(relationProvider.getItemResourceRelFor(Film.class));
+
+            //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.LINK, self.toString())
+                    .header(HttpHeaders.LINK, all.toString())
+                    .body(result);
         } catch (JsonPatchException e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");
