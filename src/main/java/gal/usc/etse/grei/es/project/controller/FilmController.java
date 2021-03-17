@@ -4,6 +4,7 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.model.Film;
+import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FilmService;
 import gal.usc.etse.grei.es.project.service.UserService;
@@ -184,17 +185,60 @@ public class FilmController {
     //método GET al recuperar valoraciones de una película
     //link al servicio en films/assessments, produces lo que devuelve
     @GetMapping(
-            path = "assessments",
+            path = "{id}/assessments",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si está logueado
     //@PreAuthorize("isAuthenticated()")
-    ResponseEntity<List<Assessment>> getAssessmentsFilm(
+    ResponseEntity<Page<Assessment>> getAssessmentsFilm(
             //parámetro a continuación de la interrogación para el filtrado
-            @RequestParam(name = "film") String film
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @PathVariable("id") String film
     ) {
-        //devolvemos las valoraciones obtenidas
-        return ResponseEntity.of(assessments.getAssessmentsFilm(film));
+        //si la película no existe
+        if (!films.get(film).isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+        }
+        //recuperamos las valoraciones obtenidas
+        Optional<Page<Assessment>> result = assessments.getAssessmentsFilm(page, size, film);
+
+        //si no hay ninguna valoración guardada
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessments not found");
+        }
+        //guardamos los resultados obtenidos
+        Page<Assessment> data = result.get();
+        //paginamos los datos obtenidos
+        Pageable metadata = data.getPageable();
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(page, size, film)
+        ).withSelfRel();
+        Link first = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(metadata.first().getPageNumber(), size, film)
+        ).withRel(IanaLinkRelations.FIRST);
+        Link next = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(metadata.next().getPageNumber(), size, film)
+        ).withRel(IanaLinkRelations.NEXT);
+        Link previous = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(metadata.previousOrFirst().getPageNumber(), size, film)
+        ).withRel(IanaLinkRelations.PREVIOUS);
+        Link last = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(data.getTotalPages() - 1, size, film)
+        ).withRel(IanaLinkRelations.LAST);
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, first.toString())
+                .header(HttpHeaders.LINK, next.toString())
+                .header(HttpHeaders.LINK, previous.toString())
+                .header(HttpHeaders.LINK, last.toString())
+                .body(result.get());
     }
 
     //método POST al crear una nueva película
@@ -270,7 +314,7 @@ public class FilmController {
                 methodOn(FilmController.class).get(result.getFilm().getId())
         ).withSelfRel();
         Link all = linkTo(
-                methodOn(FilmController.class).getAssessmentsFilm(result.getFilm().getId())
+                methodOn(FilmController.class).getAssessmentsFilm(0, 0, result.getFilm().getId())
         ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
 
         //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
@@ -367,7 +411,7 @@ public class FilmController {
                     methodOn(FilmController.class).get(result.getFilm().getId())
             ).withSelfRel();
             Link allFilms = linkTo(
-                    methodOn(FilmController.class).getAssessmentsFilm(result.getFilm().getId())
+                    methodOn(FilmController.class).getAssessmentsFilm(0, 0, result.getFilm().getId())
             ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
             Link allUsers = linkTo(
                     methodOn(UserController.class).get(result.getUser().getEmail())

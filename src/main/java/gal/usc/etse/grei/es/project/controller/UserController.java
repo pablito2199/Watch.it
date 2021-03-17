@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -172,22 +171,60 @@ public class UserController {
     //método GET al recuperar valoraciones de un usuario
     //link al servicio en users/assessments, produces lo que devuelve
     @GetMapping(
-            path = "assessments",
+            path = "{id}/assessments",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo puede admin, el propio usuario y sus amigos
     //@PreAuthorize("hasRole('ADMIN') or #user == principal or @friendshipService.areFriends(principal, #user)")
-    ResponseEntity<List<Assessment>> getAssessmentsUser(
+    ResponseEntity<Page<Assessment>> getAssessmentsUser(
             //parámetro a continuación de la interrogación para el filtrado
-            @RequestParam(name = "user") String user
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @PathVariable("id") String user
     ) {
         //si el usuario no existe
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        //devolvemos las valoraciones obtenidas
-        return ResponseEntity.of(assessments.getAssessmentsUser(user));
+        //recuperamos las valoraciones obtenidas
+        Optional<Page<Assessment>> result = assessments.getAssessmentsUser(page, size, user);
+
+        //si no hay ninguna valoración guardada
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessments not found");
+        }
+        //guardamos los resultados obtenidos
+        Page<Assessment> data = result.get();
+        //paginamos los datos obtenidos
+        Pageable metadata = data.getPageable();
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).getAssessmentsUser(page, size, user)
+        ).withSelfRel();
+        Link first = linkTo(
+                methodOn(UserController.class).getAssessmentsUser(metadata.first().getPageNumber(), size, user)
+        ).withRel(IanaLinkRelations.FIRST);
+        Link next = linkTo(
+                methodOn(UserController.class).getAssessmentsUser(metadata.next().getPageNumber(), size, user)
+        ).withRel(IanaLinkRelations.NEXT);
+        Link previous = linkTo(
+                methodOn(UserController.class).getAssessmentsUser(metadata.previousOrFirst().getPageNumber(), size, user)
+        ).withRel(IanaLinkRelations.PREVIOUS);
+        Link last = linkTo(
+                methodOn(UserController.class).getAssessmentsUser(data.getTotalPages() - 1, size, user)
+        ).withRel(IanaLinkRelations.LAST);
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, first.toString())
+                .header(HttpHeaders.LINK, next.toString())
+                .header(HttpHeaders.LINK, previous.toString())
+                .header(HttpHeaders.LINK, last.toString())
+                .body(result.get());
     }
 
     //método GET al recuperar un amigo de un usuario
@@ -227,7 +264,7 @@ public class UserController {
                 methodOn(UserController.class).get(result.get().getId())
         ).withSelfRel();
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(result.get().getUser())
+                methodOn(UserController.class).getFriends(0, 0, result.get().getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
         Link userLink = linkTo(
                 methodOn(UserController.class).get(user)
@@ -260,20 +297,52 @@ public class UserController {
     )
     //si es el propio usuario
     //@PreAuthorize("#user == principal")
-    ResponseEntity<List<String>> getFriends(@PathVariable("id") String user) {
+    ResponseEntity<Page<String>> getFriends(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @PathVariable("id") String user
+    ) {
         //si el usuario no existe
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        Optional<List<String>> result = Optional.of(friendships.getFriends(user));
+        Optional<Page<String>> result = friendships.getFriends(page, size, user);
         //si la lista está vacía
-        if (result.get().size() == 0) {
+        if (!result.isPresent()) {
             //devolvemos código 204 al ir todo bien, pero no encontrar amigos
-            return ResponseEntity.noContent().build();
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "User do not have any friends");
         }
-        //devolvemos los amigos obtenidos
-        return ResponseEntity.of(result);
+        //guardamos los resultados obtenidos
+        Page<String> data = result.get();
+        //paginamos los datos obtenidos
+        Pageable metadata = data.getPageable();
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(UserController.class).getFriends(page, size, user)
+        ).withSelfRel();
+        Link first = linkTo(
+                methodOn(UserController.class).getFriends(metadata.first().getPageNumber(), size, user)
+        ).withRel(IanaLinkRelations.FIRST);
+        Link next = linkTo(
+                methodOn(UserController.class).getFriends(metadata.next().getPageNumber(), size, user)
+        ).withRel(IanaLinkRelations.NEXT);
+        Link previous = linkTo(
+                methodOn(UserController.class).getFriends(metadata.previousOrFirst().getPageNumber(), size, user)
+        ).withRel(IanaLinkRelations.PREVIOUS);
+        Link last = linkTo(
+                methodOn(UserController.class).getFriends(data.getTotalPages() - 1, size, user)
+        ).withRel(IanaLinkRelations.LAST);
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .header(HttpHeaders.LINK, first.toString())
+                .header(HttpHeaders.LINK, next.toString())
+                .header(HttpHeaders.LINK, previous.toString())
+                .header(HttpHeaders.LINK, last.toString())
+                .body(result.get());
     }
 
     //método POST al crear un nuevo usuario
@@ -339,7 +408,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User can not be his own friend");
         }
         //si la amistad ya existe
-        if (friendships.getFriends(user).contains(friend.getEmail())) {
+        if (friendships.getAllFriends(user).contains(friend.getEmail())) {
             //devolvemos código de error 409 al producirse un conflicto
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Friendship already exists");
         }
@@ -351,7 +420,7 @@ public class UserController {
                 methodOn(UserController.class).get(result.getId())
         ).withSelfRel();
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(result.getUser())
+                methodOn(UserController.class).getFriends(0, 0, result.getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
 
         //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
@@ -455,7 +524,7 @@ public class UserController {
                 methodOn(UserController.class).get(result.getId())
         ).withSelfRel();
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(result.getUser())
+                methodOn(UserController.class).getFriends(0, 0, result.getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
         Link userLink = linkTo(
                 methodOn(UserController.class).get(user)

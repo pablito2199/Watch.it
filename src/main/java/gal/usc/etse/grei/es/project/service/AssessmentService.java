@@ -4,9 +4,13 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
 import gal.usc.etse.grei.es.project.repository.AssessmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,27 +59,33 @@ public class AssessmentService {
     }
 
     //devuelve las valoraciones de la película correspondiente
-    public Optional<List<Assessment>> getAssessmentsFilm(String film) {
+    public Optional<Page<Assessment>> getAssessmentsFilm(int page, int size, String film) {
+        Pageable request = PageRequest.of(page, size);
         Criteria criteria = Criteria.where("_id").exists(true);
         criteria.and("film._id").is(film);
-        Query query = Query.query(criteria);
+        Query query = Query.query(criteria).with(request);
         List<Assessment> result = mongo.find(query, Assessment.class);
+
         if (result.isEmpty())
             return Optional.empty();
         else
-            return Optional.of(result);
+            return Optional.of(PageableExecutionUtils.getPage(result, request,
+                    () -> mongo.count(Query.query(criteria), Assessment.class)));
     }
 
     //devuelve las valoraciones del usuario correspondiente
-    public Optional<List<Assessment>> getAssessmentsUser(String user) {
+    public Optional<Page<Assessment>> getAssessmentsUser(int page, int size, String user) {
+        Pageable request = PageRequest.of(page, size);
         Criteria criteria = Criteria.where("_id").exists(true);
         criteria.and("user._id").is(user);
         Query query = Query.query(criteria);
         List<Assessment> result = mongo.find(query, Assessment.class);
+
         if (result.isEmpty())
             return Optional.empty();
         else
-            return Optional.of(result);
+            return Optional.of(PageableExecutionUtils.getPage(result, request,
+                    () -> mongo.count(Query.query(criteria), Assessment.class)));
     }
 
     //inserta la valoración

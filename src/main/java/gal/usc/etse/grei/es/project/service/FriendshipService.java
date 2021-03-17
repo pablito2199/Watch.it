@@ -1,12 +1,17 @@
 package gal.usc.etse.grei.es.project.service;
 
 import gal.usc.etse.grei.es.project.model.Date;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.Friendship;
 import gal.usc.etse.grei.es.project.repository.FriendshipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -31,13 +36,13 @@ public class FriendshipService {
         return friendships.findById(id);
     }
 
-    //devuelve todas las valoraciones
+    //devuelve todas las amistades
     public List<Friendship> getAll() {
         return friendships.findAll();
     }
 
     //devuelve la lista de amigos
-    public List<String> getFriends(String user) {
+    public List<String> getAllFriends(String user) {
         Criteria criteria = Criteria.where("_id").exists(true);
         //indicamos que el usuario o friend debe ser user
         criteria.and("user").is(user);
@@ -55,6 +60,32 @@ public class FriendshipService {
         }
 
         return friends;
+    }
+
+    //devuelve la lista de amigos
+    public Optional<Page<String>> getFriends(int page, int size, String user) {
+        Pageable request = PageRequest.of(page, size);
+        Criteria criteria = Criteria.where("_id").exists(true);
+        //indicamos que el usuario o friend debe ser user
+        criteria.and("user").is(user);
+        Query query = Query.query(criteria);
+        //añadimos primero en los que se encuentre en user
+        List<Friendship> result = mongo.find(query, Friendship.class);
+        criteria.and("friend").is(user);
+        query = Query.query(criteria).with(request);
+        //añadimos a continuación en los que se encuentre como friend
+        result.addAll(mongo.find(query, Friendship.class));
+        List<String> friends = new ArrayList<>();
+        //añadimos todos los amigos obtenidos
+        for (Friendship f : result) {
+            friends.add(f.getFriend());
+        }
+
+        if (result.isEmpty())
+            return Optional.empty();
+        else
+            return Optional.of(PageableExecutionUtils.getPage(friends, request,
+                    () -> mongo.count(Query.query(criteria), String.class)));
     }
 
     //modifica la amistad
@@ -87,6 +118,6 @@ public class FriendshipService {
     //comprueba si dos usuarios son amigos
     public Boolean areFriends(String user, String friend) {
         //si está contenido en la lista, entonces son amigos
-        return this.getFriends(user).contains(friend);
+        return this.getAllFriends(user).contains(friend);
     }
 }
