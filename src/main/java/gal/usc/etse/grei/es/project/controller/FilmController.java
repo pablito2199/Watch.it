@@ -414,7 +414,7 @@ public class FilmController {
                     methodOn(FilmController.class).getAssessmentsFilm(0, 0, result.getFilm().getId())
             ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
             Link allUsers = linkTo(
-                    methodOn(UserController.class).get(result.getUser().getEmail())
+                    methodOn(UserController.class).getAssessmentsUser(0, 0, result.getUser().getEmail())
             ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
 
             //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
@@ -451,8 +451,19 @@ public class FilmController {
                 assessments.delete(a.getId());
             }
         }
-        //devolvemos código de error 200 al ir todo bien
-        return ResponseEntity.noContent().build();
+
+        //creamos los enlaces correspondientes
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        Link all = linkTo(
+                methodOn(FilmController.class).get(0, 0, sort, null, null, null, null,
+                        null, null, null, null)
+        ).withRel(relationProvider.getItemResourceRelFor(Film.class));
+
+        //devolvemos código de error 204 al ir todo bien
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.LINK, all.toString())
+                .build();
     }
 
     //método DELETE para eliminar una valoración
@@ -469,9 +480,23 @@ public class FilmController {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
         }
+        String film = assessments.get(id).get().getFilm().getId();
+        String user = assessments.get(id).get().getUser().getEmail();
         //eliminamos la valoración
         assessments.delete(id);
-        //devolvemos código de error 200 al ir todo bien
-        return ResponseEntity.noContent().build();
+
+        //creamos los enlaces correspondientes
+        Link allFilms = linkTo(
+                methodOn(FilmController.class).getAssessmentsFilm(0, 0, film)
+        ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
+        Link allUsers = linkTo(
+                methodOn(UserController.class).getAssessmentsUser(0, 0, user)
+        ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.LINK, allFilms.toString())
+                .header(HttpHeaders.LINK, allUsers.toString())
+                .build();
     }
 }

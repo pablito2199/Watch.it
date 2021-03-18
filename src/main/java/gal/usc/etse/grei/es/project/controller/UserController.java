@@ -2,6 +2,7 @@ package gal.usc.etse.grei.es.project.controller;
 
 import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
+import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.Friendship;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
@@ -577,8 +578,18 @@ public class UserController {
                 friendships.delete(f.getId());
             }
         }
+
+        //creamos los enlaces correspondientes
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        Link all = linkTo(
+                methodOn(UserController.class).get(0, 0, sort, null, null)
+        ).withRel(relationProvider.getItemResourceRelFor(User.class));
+
         //devolvemos código de error 204 al ir todo bien
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.LINK, all.toString())
+                .build();
     }
 
     //método DELETE para eliminar una amistad
@@ -614,7 +625,15 @@ public class UserController {
         }
         //eliminamos la amistad
         friendships.delete(friendship);
+
+        //creamos los enlaces correspondientes
+        Link all = linkTo(
+                methodOn(UserController.class).getFriends(0, 0, user)
+        ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
+
         //devolvemos código de error 204 al ir todo bien
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.LINK, all.toString())
+                .build();
     }
 }
