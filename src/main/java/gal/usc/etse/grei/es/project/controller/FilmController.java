@@ -1,6 +1,5 @@
 package gal.usc.etse.grei.es.project.controller;
 
-import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.*;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
@@ -389,11 +388,14 @@ public class FilmController {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
         }
-        //si se intenta eliminar el título o el id
-        if (updates.get(0).containsValue("remove") &&
-                (updates.get(0).containsValue("/title") || updates.get(0).containsValue("/id"))) {
-            //devolvemos código de error 422 al intentar el eliminar el campo del título o id
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
+        //para cada operación del patch
+        for (Map<String, Object> update : updates) {
+            //si se intenta eliminar el título o el id
+            if (update.containsValue("remove") &&
+                    (update.containsValue("/title") || update.containsValue("/id"))) {
+                //devolvemos código de error 422 al intentar el eliminar el campo del título o id
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
+            }
         }
         try {
             //modificamos la película en la base de datos
@@ -437,19 +439,22 @@ public class FilmController {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
         }
-        //si se intenta modificar el usuario, la película o el id
-        if (updates.get(0).containsValue("replace") &&
-                (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
-                        updates.get(0).containsValue("/_id"))) {
-            //devolvemos código de error 422 al intentar modificar la película o usuario
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not modify the field");
-        }
-        //si se intenta eliminar el usuario, la película, la valoración o el id
-        if (updates.get(0).containsValue("remove") &&
-                (updates.get(0).containsValue("/film") || updates.get(0).containsValue("/user") ||
-                        updates.get(0).containsValue("/rating") || updates.get(0).containsValue("/_id"))) {
-            //devolvemos código de error 422 al intentar el eliminar el campo de película, usuario, valoración o id
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
+        //para cada operación del patch
+        for (Map<String, Object> update : updates) {
+            //si se intenta modificar el usuario, la película o el id
+            if (update.containsValue("replace") &&
+                    (update.containsValue("/film") || update.containsValue("/user") ||
+                            update.containsValue("/_id"))) {
+                //devolvemos código de error 422 al intentar modificar la película o usuario
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not modify the field");
+            }
+            //si se intenta eliminar el usuario, la película, la valoración o el id
+            if (update.containsValue("remove") &&
+                    (update.containsValue("/film") || update.containsValue("/user") ||
+                            update.containsValue("/rating") || update.containsValue("/_id"))) {
+                //devolvemos código de error 422 al intentar el eliminar el campo de película, usuario, valoración o id
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
+            }
         }
         try {
             //modificamos la valoración

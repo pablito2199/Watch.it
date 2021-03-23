@@ -445,18 +445,21 @@ public class UserController {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        //si se trata de modificar el aniversario o el email
-        if (updates.get(0).containsValue("replace") &&
-                (updates.get(0).containsValue("/email") || updates.get(0).containsValue("/birthday"))) {
-            //devolvemos código de error 422 al intentar modificar un usuario con datos inválidos
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not modify the field");
-        }
-        //si se trata de eliminar el email, nombre o aniversario
-        if (updates.get(0).containsValue("remove") &&
-                (updates.get(0).containsValue("/email") || updates.get(0).containsValue("/birthday") ||
-                        updates.get(0).containsValue("/name"))) {
-            //devolvemos código de error 422 al intentar eliminar campos de un usuario inválidos
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
+        //para cada operación del patch
+        for (Map<String, Object> update : updates) {
+            //si se trata de modificar el aniversario o el email
+            if (update.containsValue("replace") &&
+                    (update.containsValue("/email") || update.containsValue("/birthday"))) {
+                //devolvemos código de error 422 al intentar modificar un usuario con datos inválidos
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not modify the field");
+            }
+            //si se trata de eliminar el email, nombre o aniversario
+            if (update.containsValue("remove") &&
+                    (update.containsValue("/email") || update.containsValue("/birthday") ||
+                            update.containsValue("/name"))) {
+                //devolvemos código de error 422 al intentar eliminar campos de un usuario inválidos
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "You can not remove the field");
+            }
         }
         try {
             //modificamos el usuario
