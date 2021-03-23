@@ -1,8 +1,6 @@
 package gal.usc.etse.grei.es.project.controller;
 
-import com.github.fge.jsonpatch.JsonPatchException;
 import gal.usc.etse.grei.es.project.model.Assessment;
-import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.Friendship;
 import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
@@ -479,7 +477,7 @@ public class UserController {
                     .header(HttpHeaders.LINK, self.toString())
                     .header(HttpHeaders.LINK, all.toString())
                     .body(result);
-        } catch (JsonPatchException e) {
+        } catch (Exception e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");
         }

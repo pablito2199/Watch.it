@@ -1,12 +1,11 @@
 package gal.usc.etse.grei.es.project.controller;
 
 import com.github.fge.jsonpatch.JsonPatchException;
-import gal.usc.etse.grei.es.project.model.Assessment;
+import gal.usc.etse.grei.es.project.model.*;
 import gal.usc.etse.grei.es.project.model.Date;
-import gal.usc.etse.grei.es.project.model.Film;
-import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FilmService;
+import gal.usc.etse.grei.es.project.service.PersonService;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,14 +34,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class FilmController {
     private final AssessmentService assessments;
     private final FilmService films;
+    private final PersonService people;
     private final UserService users;
     private final LinkRelationProvider relationProvider;
 
     //Instancias
     @Autowired
-    public FilmController(AssessmentService assessments, FilmService films, UserService users, LinkRelationProvider relationProvider) {
+    public FilmController(AssessmentService assessments, FilmService films, PersonService people, UserService users, LinkRelationProvider relationProvider) {
         this.assessments = assessments;
         this.films = films;
+        this.people = people;
         this.users = users;
         this.relationProvider = relationProvider;
     }
@@ -185,6 +186,37 @@ public class FilmController {
     //método GET al recuperar valoraciones de una película
     //link al servicio en films/assessments, produces lo que devuelve
     @GetMapping(
+            path = "assessments/{id}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    //si está logueado
+    //@PreAuthorize("isAuthenticated()")
+    ResponseEntity<Assessment> getAssessment(
+            @PathVariable("id") String assessment
+    ) {
+        //recuperamos la valoración obtenida
+        Optional<Assessment> result = assessments.get(assessment);
+
+        //si la valoración no existe
+        if (!result.isPresent()) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assessment not found");
+        }
+
+        //creamos los enlaces correspondientes
+        Link self = linkTo(
+                methodOn(FilmController.class).getAssessment(assessment)
+        ).withSelfRel();
+
+        //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LINK, self.toString())
+                .body(result.get());
+    }
+
+    //método GET al recuperar valoraciones de una película
+    //link al servicio en films/assessments, produces lo que devuelve
+    @GetMapping(
             path = "{id}/assessments",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -250,6 +282,23 @@ public class FilmController {
     //solo se permite a los administradores
     //@PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
+        List<String> listPeople = people.get();
+
+        //si alguno de los cast no está presente
+        for (Cast c : film.getCast()) {
+            if (!listPeople.contains(c.getId())) {
+                //devolvemos código de error 404 al producirse un error de búsqueda
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cast " + c.getName() + " not found");
+            }
+        }
+        //si alguno de los crew no está presente
+        for (Crew c : film.getCrew()) {
+            if (!listPeople.contains(c.getId())) {
+                //devolvemos código de error 404 al producirse un error de búsqueda
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Crew " + c.getName() + " not found");
+            }
+        }
+
         //guardamos la película en la base de datos
         Film result = films.insert(film);
 
@@ -366,7 +415,7 @@ public class FilmController {
                     .header(HttpHeaders.LINK, self.toString())
                     .header(HttpHeaders.LINK, all.toString())
                     .body(result);
-        } catch (JsonPatchException e) {
+        } catch (Exception e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");
         }
@@ -408,7 +457,7 @@ public class FilmController {
 
             //creamos los enlaces correspondientes
             Link self = linkTo(
-                    methodOn(FilmController.class).get(result.getFilm().getId())
+                    methodOn(FilmController.class).getAssessment(result.getId())
             ).withSelfRel();
             Link allFilms = linkTo(
                     methodOn(FilmController.class).getAssessmentsFilm(0, 0, result.getFilm().getId())
@@ -423,7 +472,7 @@ public class FilmController {
                     .header(HttpHeaders.LINK, allFilms.toString())
                     .header(HttpHeaders.LINK, allUsers.toString())
                     .body(result);
-        } catch (JsonPatchException e) {
+        } catch (Exception e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Operation can not be applied to the object");
         }

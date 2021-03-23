@@ -1,7 +1,6 @@
 package gal.usc.etse.grei.es.project.service;
 
 import gal.usc.etse.grei.es.project.model.Date;
-import gal.usc.etse.grei.es.project.model.Film;
 import gal.usc.etse.grei.es.project.model.Friendship;
 import gal.usc.etse.grei.es.project.repository.FriendshipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,12 +92,16 @@ public class FriendshipService {
         //obtenemos la fecha actual
         LocalDate currentDate = LocalDate.now();
         Date since = new Date(currentDate.getDayOfMonth(), currentDate.getMonthValue(), currentDate.getYear());
-        //obtenemos la amistad de la base de datos
-        Friendship friendship = this.get(id).get();
-        //indicamos amistad aceptada y fecha actual
-        friendship.setConfirmed(true).setSince(since);
-        //actualizamos la amistad
-        return friendships.save(friendship);
+        //si la amistad existe
+        if (this.get(id).isPresent()) {
+            //obtenemos la amistad de la base de datos
+            Friendship friendship = this.get(id).get();
+            //indicamos amistad aceptada y fecha actual
+            friendship.setConfirmed(true).setSince(since);
+            //actualizamos la amistad
+            return friendships.save(friendship);
+        }
+        return null;
 
     }
 
@@ -113,11 +116,5 @@ public class FriendshipService {
     //elimina la valoración con el id correspondiente
     public void delete(String id) {
         friendships.deleteById(id);
-    }
-
-    //comprueba si dos usuarios son amigos
-    public Boolean areFriends(String user, String friend) {
-        //si está contenido en la lista, entonces son amigos
-        return this.getAllFriends(user).contains(friend);
     }
 }
