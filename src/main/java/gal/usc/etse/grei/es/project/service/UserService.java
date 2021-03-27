@@ -31,7 +31,7 @@ public class UserService {
             //borramos la contraseña para que no se muestre
             user.get().setPassword(null);
             //devolvemos el usuario encontrado
-            return users.findById(email);
+            return user;
         }
         return Optional.empty();
     }

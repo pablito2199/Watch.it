@@ -46,16 +46,24 @@ public class FriendshipService {
         //indicamos que el usuario o friend debe ser user
         criteria.and("user").is(user);
         Query query = Query.query(criteria);
-        //añadimos primero en los que se encuentre en user
         List<Friendship> result = mongo.find(query, Friendship.class);
         criteria.and("friend").is(user);
         query = Query.query(criteria);
         //añadimos a continuación en los que se encuentre como friend
         result.addAll(mongo.find(query, Friendship.class));
+        Criteria criteria1 = Criteria.where("_id").exists(true);
+        criteria1.and("friend").is(user);
+        query = Query.query(criteria1);
+        //añadimos a continuación en los que se encuentre como friend
+        result.addAll(mongo.find(query, Friendship.class));
         List<String> friends = new ArrayList<>();
         //añadimos todos los amigos obtenidos
         for (Friendship f : result) {
-            friends.add(f.getFriend());
+            if (user.equals(f.getUser())) {
+                friends.add(f.getFriend());
+            } else {
+                friends.add(f.getUser());
+            }
         }
 
         return friends;
@@ -68,16 +76,22 @@ public class FriendshipService {
         //indicamos que el usuario o friend debe ser user
         criteria.and("user").is(user);
         Query query = Query.query(criteria);
-        //añadimos primero en los que se encuentre en user
         List<Friendship> result = mongo.find(query, Friendship.class);
-        criteria.and("friend").is(user);
-        query = Query.query(criteria).with(request);
+        Criteria criteria1 = Criteria.where("_id").exists(true);
+        criteria1.and("friend").is(user);
+        query = Query.query(criteria1);
         //añadimos a continuación en los que se encuentre como friend
         result.addAll(mongo.find(query, Friendship.class));
         List<String> friends = new ArrayList<>();
         //añadimos todos los amigos obtenidos
         for (Friendship f : result) {
-            friends.add(f.getFriend());
+            if (f.getConfirmed() != null) {
+                if (user.equals(f.getUser())) {
+                    friends.add(f.getFriend());
+                } else {
+                    friends.add(f.getUser());
+                }
+            }
         }
 
         if (result.isEmpty())

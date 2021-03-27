@@ -230,7 +230,7 @@ public class FilmController {
         //si la película no existe
         if (!films.get(film).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film " + film + " not found");
         }
         //recuperamos las valoraciones obtenidas
         Optional<Page<Assessment>> result = assessments.getAssessmentsFilm(page, size, film);
@@ -358,17 +358,17 @@ public class FilmController {
         Assessment result = assessments.insert(assessment);
 
         //creamos los enlaces correspondientes
-        Link self = linkTo(
+        Link film = linkTo(
                 methodOn(FilmController.class).get(result.getFilm().getId())
         ).withSelfRel();
-        Link all = linkTo(
+        Link allFromFilm = linkTo(
                 methodOn(FilmController.class).getAssessmentsFilm(0, 0, result.getFilm().getId())
         ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
 
         //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
         return ResponseEntity.ok()
-                .header(HttpHeaders.LINK, self.toString())
-                .header(HttpHeaders.LINK, all.toString())
+                .header(HttpHeaders.LINK, film.toString())
+                .header(HttpHeaders.LINK, allFromFilm.toString())
                 .body(result);
     }
 
@@ -386,7 +386,7 @@ public class FilmController {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film + " + id + " not found");
         }
         //para cada operación del patch
         for (Map<String, Object> update : updates) {
@@ -464,18 +464,18 @@ public class FilmController {
             Link self = linkTo(
                     methodOn(FilmController.class).getAssessment(result.getId())
             ).withSelfRel();
-            Link allFilms = linkTo(
+            Link allFromFilm = linkTo(
                     methodOn(FilmController.class).getAssessmentsFilm(0, 0, result.getFilm().getId())
             ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
-            Link allUsers = linkTo(
+            Link allFromUser = linkTo(
                     methodOn(UserController.class).getAssessmentsUser(0, 0, result.getUser().getEmail())
             ).withRel(relationProvider.getItemResourceRelFor(Assessment.class));
 
             //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
             return ResponseEntity.ok()
                     .header(HttpHeaders.LINK, self.toString())
-                    .header(HttpHeaders.LINK, allFilms.toString())
-                    .header(HttpHeaders.LINK, allUsers.toString())
+                    .header(HttpHeaders.LINK, allFromFilm.toString())
+                    .header(HttpHeaders.LINK, allFromUser.toString())
                     .body(result);
         } catch (Exception e) {
             //devolvemos un error del tipo 422, pues la operación no se puede aplicar al objeto a modificar

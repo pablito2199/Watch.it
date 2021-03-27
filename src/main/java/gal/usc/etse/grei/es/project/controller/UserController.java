@@ -400,16 +400,18 @@ public class UserController {
         }
         //si el campo friend es nulo
         if (friend.getEmail() == null) {
-            //devolvemos código de error 400 al intentar añadir un amigos con campos inválidos
+            //devolvemos código de error 400 al intentar añadir un amigo con campos inválidos
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Field friend can not be empty");
         }
+        //si se intenta añadir como amigo a si mismo
         if (user.equals(friend.getEmail())) {
+            //devolvemos código de error 400 al intentar añadir un amigo inválido
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User can not be his own friend");
         }
         //si la amistad ya existe
         if (friendships.getAllFriends(user).contains(friend.getEmail())) {
             //devolvemos código de error 409 al producirse un conflicto
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Friendship already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Friendship exists or not accepted yet");
         }
         //creamos la amistad
         Friendship result = friendships.insert(user, friend.getEmail());
@@ -506,6 +508,11 @@ public class UserController {
         if (!friendships.get(friendship).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
+        }
+        //si la amistad no se encuentra en la base de datos
+        if (friendships.get(friendship).get().getConfirmed() != null) {
+            //devolvemos código de error 404 al producirse un error de búsqueda
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship already accepted");
         }
         //si el usuario no es el friend, o ya se ha aceptado la amistad
         if (!user.equals(friendships.get(friendship).get().getFriend()) ||
