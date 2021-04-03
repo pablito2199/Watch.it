@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -53,7 +54,7 @@ public class UserController {
     )
     //cogemos la variable id del path y la identificamos con el email
     //solo puede admin, el propio usuario y sus amigos
-    //@PreAuthorize("hasRole('ADMIN') or #email == principal or @friendshipService.areFriends(principal, #email)")
+    @PreAuthorize("hasRole('ADMIN') or #email == principal or @friendshipService.areFriends(principal, #email)")
     public ResponseEntity<User> get(@PathVariable("id") String email) {
         //recuperamos el usuario obtenido
         Optional<User> result = users.get(email);
@@ -88,7 +89,7 @@ public class UserController {
     )
     //recogemos todos los usuarios paginando con los requestparam
     //si está logueado
-    //@PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<User>> get(
             //parámetros a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -174,7 +175,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo puede admin, el propio usuario y sus amigos
-    //@PreAuthorize("hasRole('ADMIN') or #user == principal or @friendshipService.areFriends(principal, #user)")
+    @PreAuthorize("hasRole('ADMIN') or #user == principal or @friendshipService.areFriends(principal, #user)")
     ResponseEntity<Page<Assessment>> getAssessmentsUser(
             //parámetro a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -233,7 +234,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo pueden los usuarios implicados en la relación
-    //@PreAuthorize("#user == principal and (@friendshipService.get(#friendship).get().user == principal or @friendshipService.get(#friendship).get().friend == principal)")
+    @PreAuthorize("#user == principal and (@friendshipService.get(#friendship).get().user == principal or @friendshipService.get(#friendship).get().friend == principal)")
     ResponseEntity<Friendship> get(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si la amistad no se encuentra en la base de datos
         if (!friendships.get(friendship).isPresent()) {
@@ -295,7 +296,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si es el propio usuario
-    //@PreAuthorize("#user == principal")
+    @PreAuthorize("#user == principal")
     ResponseEntity<Page<String>> getFriends(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size,
@@ -351,7 +352,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //permite crear un usuario a cualquiera
-    //@PreAuthorize("permitAll()")
+    @PreAuthorize("permitAll()")
     ResponseEntity<User> insert(@RequestBody @Valid User user) {
         //si el usuario ya existe en la base de datos
         if (users.get(user.getEmail()).isPresent()) {
@@ -386,7 +387,7 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo puede el propio usuario
-    //@PreAuthorize("#user == principal")
+    @PreAuthorize("#user == principal")
     ResponseEntity<Friendship> insert(@PathVariable("id") String user, @RequestBody User friend) {
         //si el amigo no se encuentra en la base de datos
         if (!users.get(friend.getEmail()).isPresent()) {
@@ -440,7 +441,7 @@ public class UserController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo puede el propio usuario
-    //@PreAuthorize("#email == principal")
+    @PreAuthorize("#email == principal")
     ResponseEntity<User> patch(@PathVariable("id") String email, @RequestBody List<Map<String, Object>> updates) {
         //si el usuario no está presente en la base de datos
         if (!users.get(email).isPresent()) {
@@ -497,7 +498,7 @@ public class UserController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //si amigo es el propio usuario
-    //@PreAuthorize("#user == principal")
+    @PreAuthorize("#user == principal")
     ResponseEntity<Friendship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no está presente en la base de datos
         if (!users.get(user).isPresent()) {
@@ -565,7 +566,7 @@ public class UserController {
     )
     //recoge la variable del id, pues necesita buscar el email para eliminar el usuario
     //solo puede el propio usuario
-    //@PreAuthorize("#email == principal")
+    @PreAuthorize("#email == principal")
     ResponseEntity<User> delete(@PathVariable("id") String email) {
         //si el usuario no existe
         if (!users.get(email).isPresent()) {
@@ -583,6 +584,9 @@ public class UserController {
         //eliminamos las amistades de dicho usuario
         for (Friendship f : friendships.getAll()) {
             if (f.getUser().equals(email)) {
+                friendships.delete(f.getId());
+            }
+            if (f.getFriend().equals(email)) {
                 friendships.delete(f.getId());
             }
         }
@@ -608,7 +612,7 @@ public class UserController {
     //recoge la variable del user_id, pues necesita buscar el usuario que quiere eliminar el amigo
     //recoge la variable del id, pues necesita buscar la amistad que desea eliminarse
     //solo puede el propio usuario
-    //@PreAuthorize("#user == principal")
+    @PreAuthorize("#user == principal")
     ResponseEntity<Friendship> delete(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
         //si el usuario no se encuentra en la base de datos
         if (!users.get(user).isPresent()) {

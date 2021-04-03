@@ -56,6 +56,18 @@ public class UserService {
         else return Optional.of(result);
     }
 
+    //devuelve el usuario con el email correspondiente
+    public Optional<User> getAllInfo(String email) {
+        Optional<User> user = users.findById(email);
+        if (user.isPresent()) {
+            //borramos la contraseña para que no se muestre
+            user.get().setPassword(null);
+            //devolvemos el usuario encontrado
+            return user;
+        }
+        return Optional.empty();
+    }
+
     //inserta el usuario
     public User insert(User user) {
         //codificamos la contraseña
@@ -70,22 +82,25 @@ public class UserService {
 
     //modifica el usuario
     public User patch(String id, List<Map<String, Object>> updates) throws JsonPatchException {
-        //si el usuario está presente
-        if (this.get(id).isPresent()) {
+        //si el usuario está presente, recupera el usuario con todos sus datos
+        if (users.findById(id).isPresent()) {
             //obtenemos el usuario de la base de datos
-            User user = this.get(id).get();
+            User user = users.findById(id).get();
             //actualizamos los datos con el patch
             user = patchMethod.patch(user, updates);
-            //si se modifica la contraseña, se encripta, en caso contrario no
-            if (updates.get(0).containsValue("replace") && updates.get(0).containsValue("/password")) {
-                //codificamos la contraseña
-                user.setPassword(encoder.encode(user.getPassword()));
+            //para cada operación del patch
+            for (Map<String, Object> update : updates) {
+                //si se modifica la contraseña, se encripta, en caso contrario no
+                if (update.containsValue("replace") && update.containsValue("/password")) {
+                    //codificamos la contraseña
+                    user.setPassword(encoder.encode(user.getPassword()));
+                }
             }
             //actualizamos en la base de datos
             user = users.save(user);
             //borramos la contraseña para que no se muestre
             user.setPassword(null);
-            //actualizamos en la base de datos y retornamos el usuario
+            //retornamos el usuario
             return user;
         }
         return null;

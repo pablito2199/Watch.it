@@ -131,4 +131,10 @@ public class FriendshipService {
     public void delete(String id) {
         friendships.deleteById(id);
     }
+
+    //comprueba si dos usuarios son amigos
+    public Boolean areFriends(String user, String friend) {
+        //si está contenido en la lista, entonces son amigos
+        return this.getAllFriends(user).contains(friend);
+    }
 }

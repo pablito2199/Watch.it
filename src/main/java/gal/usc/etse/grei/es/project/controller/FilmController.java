@@ -4,7 +4,6 @@ import gal.usc.etse.grei.es.project.model.*;
 import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FilmService;
-import gal.usc.etse.grei.es.project.service.PersonService;
 import gal.usc.etse.grei.es.project.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -33,16 +33,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class FilmController {
     private final AssessmentService assessments;
     private final FilmService films;
-    private final PersonService people;
     private final UserService users;
     private final LinkRelationProvider relationProvider;
 
     //Instancias
     @Autowired
-    public FilmController(AssessmentService assessments, FilmService films, PersonService people, UserService users, LinkRelationProvider relationProvider) {
+    public FilmController(AssessmentService assessments, FilmService films, UserService users, LinkRelationProvider relationProvider) {
         this.assessments = assessments;
         this.films = films;
-        this.people = people;
         this.users = users;
         this.relationProvider = relationProvider;
     }
@@ -55,7 +53,7 @@ public class FilmController {
     )
     //cogemos la variable id del path y la identificamos con el id
     //si está logueado
-    //@PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Film> get(@PathVariable("id") String id) {
         //recuperamos la película indicada
         Optional<Film> result = films.get(id);
@@ -90,7 +88,7 @@ public class FilmController {
     )
     //recogemos todas las películas paginando con los requestparam
     //si está logueado
-    //@PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<Film>> get(
             //parámetros a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -182,14 +180,14 @@ public class FilmController {
                 .body(result.get());
     }
 
-    //método GET al recuperar valoraciones de una película
-    //link al servicio en films/assessments, produces lo que devuelve
+    //método GET al recuperar una valoración
+    //link al servicio en films/assessments/{id}, produces lo que devuelve
     @GetMapping(
             path = "assessments/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si está logueado
-    //@PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Assessment> getAssessment(
             @PathVariable("id") String assessment
     ) {
@@ -220,7 +218,7 @@ public class FilmController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si está logueado
-    //@PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<Assessment>> getAssessmentsFilm(
             //parámetro a continuación de la interrogación para el filtrado
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -279,25 +277,8 @@ public class FilmController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //solo se permite a los administradores
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
-        List<String> listPeople = people.get();
-
-        //si alguno de los cast no está presente
-        for (Cast c : film.getCast()) {
-            if (!listPeople.contains(c.getId())) {
-                //devolvemos código de error 404 al producirse un error de búsqueda
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cast " + c.getName() + " not found");
-            }
-        }
-        //si alguno de los crew no está presente
-        for (Crew c : film.getCrew()) {
-            if (!listPeople.contains(c.getId())) {
-                //devolvemos código de error 404 al producirse un error de búsqueda
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Crew " + c.getName() + " not found");
-            }
-        }
-
         //guardamos la película en la base de datos
         Film result = films.insert(film);
 
@@ -327,7 +308,7 @@ public class FilmController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     //si está logueado
-    //@PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and #assessment.user.email == principal")
     ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
         //si no se indica correctamente el email del usuario
         if (assessment.getUser().getEmail() == null) {
@@ -381,7 +362,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo se permite a los administradores
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> patch(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
@@ -432,7 +413,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo el propio usuario
-    //@PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
+    @PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> patchAssessment(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
         //si la valoración no está presente en la base de datos
         if (!assessments.get(id).isPresent()) {
@@ -490,7 +471,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la película
     //solo se permite a los administradores
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> delete(@PathVariable("id") String id) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
@@ -527,7 +508,7 @@ public class FilmController {
     )
     //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
     //solo pueden admin y el propio usuario
-    //@PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
+    @PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> deleteAssessment(@PathVariable("id") String id) {
         //si la valoración no existe en la base de datos
         if (!assessments.get(id).isPresent()) {
