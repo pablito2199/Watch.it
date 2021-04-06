@@ -1,9 +1,11 @@
 package gal.usc.etse.grei.es.project.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -11,18 +13,29 @@ import java.util.Objects;
 
 @Document(collection = "users")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(
+        name = "User",
+        description = "A complete user representation"
+)
 public class User {
     @Id
     @NotBlank(message = "The email field can not be empty")
+    @Email
+    @Schema(required = true, example = "test@test.com")
     private String email;
     @NotBlank(message = "The name field can not be empty")
+    @Schema(example = "Pepe Pérez")
     private String name;
+    @Schema(example = "Spain")
     private String country;
+    @Schema(example = "https://placekitten.com/200/287")
     private String picture;
     @NotNull(message = "The birthday field can not be empty")
     private Date birthday;
     @NotBlank(message = "The password field can not be empty")
+    @Schema(example = "Abc123.@")
     private String password;
+    @Schema(example = "ADMIN")
     private List<String> roles;
 
     public User() {

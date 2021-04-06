@@ -1,6 +1,7 @@
 package gal.usc.etse.grei.es.project.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,20 +16,29 @@ public class Film {
     @Id
     private String id;
     @NotBlank(message = "The title field can not be empty")
+    @Schema(example = "1917")
     private String title;
+    @Schema(example = "The story of the film is a war in France during the 90s.")
     private String overview;
+    @Schema(example = "Why are we here?")
     private String tagline;
     private Collection collection;
+    @Schema(example = "Drama, Comedy")
     private List<String> genres;
     private Date releaseDate;
+    @Schema(example = "french, war")
     private List<String> keywords;
     private List<Producer> producers;
     private List<Crew> crew;
     private List<Cast> cast;
     private List<Resource> resources;
+    @Schema(minimum = "0", example = "100000")
     private Long budget;
+    @Schema(example = "RELEASED")
     private Status status;
+    @Schema(minimum = "0", example = "125")
     private Integer runtime;
+    @Schema(minimum = "0", example = "100000")
     private Long revenue;
 
     public Film() {

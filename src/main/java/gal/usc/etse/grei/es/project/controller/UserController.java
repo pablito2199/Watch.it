@@ -6,6 +6,14 @@ import gal.usc.etse.grei.es.project.model.User;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FriendshipService;
 import gal.usc.etse.grei.es.project.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +39,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 //link al servicio que se encuentra en /users
 @RestController
 @RequestMapping("users")
+@Tag(name = "User API", description = "User related operations")
+@SecurityRequirement(name = "JWT")
 public class UserController {
     private final AssessmentService assessments;
     private final FriendshipService friendships;
@@ -52,10 +62,34 @@ public class UserController {
             path = "{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getOneUser",
+            summary = "Get a single user details",
+            description = "Get the details for a given user. To see the user details " +
+                    "you must be the requested user, his friend, or have admin permissions."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The user details",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     //cogemos la variable id del path y la identificamos con el email
     //solo puede admin, el propio usuario y sus amigos
     @PreAuthorize("hasRole('ADMIN') or #email == principal or @friendshipService.areFriends(principal, #email)")
-    public ResponseEntity<User> get(@PathVariable("id") String email) {
+    public ResponseEntity<User> get(
+            @Parameter(name = "User email", required = true)
+            @PathVariable("id") String email
+    ) {
         //recuperamos el usuario obtenido
         Optional<User> result = users.get(email);
 

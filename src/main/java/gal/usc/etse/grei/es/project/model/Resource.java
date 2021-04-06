@@ -1,13 +1,16 @@
 package gal.usc.etse.grei.es.project.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Objects;
 import java.util.StringJoiner;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Resource {
+    @Schema(example = "https://placekitten.com/200/287")
     private String url;
+    @Schema(example = "ITUNES")
     private ResourceType type;
 
     public Resource(ResourceType type, String url) {

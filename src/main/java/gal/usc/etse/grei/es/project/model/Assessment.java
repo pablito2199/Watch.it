@@ -1,6 +1,7 @@
 package gal.usc.etse.grei.es.project.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,11 +15,13 @@ public class Assessment {
     @Id
     private String id;
     @NotNull(message = "The rating field can not be empty")
+    @Schema(minimum = "1", maximum = "10", example = "8")
     private Integer rating;
     @NotNull(message = "The user field can not be empty")
     private User user;
     @NotNull(message = "The film field can not be empty")
     private Film film;
+    @Schema(example = "This film is good.")
     private String comment;
 
     public Assessment() {

@@ -1,6 +1,7 @@
 package gal.usc.etse.grei.es.project.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,9 +13,13 @@ import java.util.StringJoiner;
 public class Person {
     @Id
     private String id;
+    @Schema(example = "Pepe Perez")
     private String name;
+    @Schema(example = "Spain")
     private String country;
+    @Schema(example = "https://placekitten.com/200/287")
     private String picture;
+    @Schema(example = "He borned in Lugo in 2000s, and now he left to Madrid.")
     private String biography;
     private Date birthday;
     private Date deathday;
