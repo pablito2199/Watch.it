@@ -121,15 +121,41 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getAllUsers",
+            summary = "Get all registered users",
+            description = "Get the details for the users that are registered. To see the users " +
+                    "you must be logged in."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The users registered",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Users not found",
+                    content = @Content
+            )
+    })
     //recogemos todos los usuarios paginando con los requestparam
     //si está logueado
     @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<User>> get(
             //parámetros a continuación de la interrogación para el filtrado
+            @Parameter(name = "Page of the search")
             @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
+            @Parameter(name = "Sort of the search")
             @RequestParam(name = "sort", defaultValue = "") List<String> sort,
+            @Parameter(name = "User email")
             @RequestParam(name = "email", required = false) String email,
+            @Parameter(name = "User name")
             @RequestParam(name = "name", required = false) String name
     ) {
         //ordenamos por aniversario
