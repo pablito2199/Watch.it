@@ -5,6 +5,12 @@ import gal.usc.etse.grei.es.project.model.Date;
 import gal.usc.etse.grei.es.project.service.AssessmentService;
 import gal.usc.etse.grei.es.project.service.FilmService;
 import gal.usc.etse.grei.es.project.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -217,12 +223,36 @@ public class FilmController {
             path = "{id}/assessments",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getAllFilmAssessments",
+            summary = "Gets all registered assessments from a film",
+            description = "Get the details for the assessments that are registered to a film. To see the " +
+                    "assessments you must be the logged in."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The assessments registered to a film",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Assessments or Film not found",
+                    content = @Content
+            )
+    })
     //si está logueado
     @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<Assessment>> getAssessmentsFilm(
             //parámetro a continuación de la interrogación para el filtrado
+            @Parameter(name = "Page of the search")
             @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
+            @Parameter(name = "Film of the assessment", required = true)
             @PathVariable("id") String film
     ) {
         //si la película no existe

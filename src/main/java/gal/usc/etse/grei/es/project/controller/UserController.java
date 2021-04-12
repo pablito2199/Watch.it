@@ -64,7 +64,7 @@ public class UserController {
     )
     @Operation(
             operationId = "getOneUser",
-            summary = "Get a single user details",
+            summary = "Gets a single user details",
             description = "Get the details for a given user. To see the user details " +
                     "you must be the requested user, his friend, or have admin permissions."
     )
@@ -123,7 +123,7 @@ public class UserController {
     )
     @Operation(
             operationId = "getAllUsers",
-            summary = "Get all registered users",
+            summary = "Gets all registered users",
             description = "Get the details for the users that are registered. To see the users " +
                     "you must be logged in."
     )
@@ -234,12 +234,36 @@ public class UserController {
             path = "{id}/assessments",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getAllUserAssessments",
+            summary = "Gets all registered assessments from a user",
+            description = "Get the details for the assessments that are registered by a user. To see the " +
+                    "assessments you must be the requested user, his friend, or have admin permissions."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The assessments registered by the user",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Assessment.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Assessments OR Users not found",
+                    content = @Content
+            )
+    })
     //solo puede admin, el propio usuario y sus amigos
     @PreAuthorize("hasRole('ADMIN') or #user == principal or @friendshipService.areFriends(principal, #user)")
     ResponseEntity<Page<Assessment>> getAssessmentsUser(
             //parámetro a continuación de la interrogación para el filtrado
+            @Parameter(name = "Page of the search")
             @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
+            @Parameter(name = "User of the assessment", required = true)
             @PathVariable("id") String user
     ) {
         //si el usuario no existe
@@ -293,9 +317,40 @@ public class UserController {
             path = "{user}/friendships/{friendship}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getFriendFromUser",
+            summary = "Gets a friend from an user",
+            description = "Get the details from a friend of the user that are registered. To see the " +
+                    "friend you must be the requested user or his friend."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The friend searched by the user",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Friendship.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User doesn't below to the friendship OR the friendship is not accepted yet.",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Friendship not found",
+                    content = @Content
+            )
+    })
     //solo pueden los usuarios implicados en la relación
     @PreAuthorize("#user == principal and (@friendshipService.get(#friendship).get().user == principal or @friendshipService.get(#friendship).get().friend == principal)")
-    ResponseEntity<Friendship> get(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+    ResponseEntity<Friendship> get(
+            @Parameter(name = "User who searches for the friend", required = true)
+            @PathVariable("user") String user,
+            @Parameter(name = "Friendship to find", required = true)
+            @PathVariable("friendship") String friendship
+    ) {
         //si la amistad no se encuentra en la base de datos
         if (!friendships.get(friendship).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -355,11 +410,40 @@ public class UserController {
             path = "{id}/friendships",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getAllFriends",
+            summary = "Gets all friends from an user",
+            description = "Get the details from the friends of the user that are registered. To see the " +
+                    "friends you must be the requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The friends registered by the user",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Friendship.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "User do not have any friends",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     //si es el propio usuario
     @PreAuthorize("#user == principal")
     ResponseEntity<Page<String>> getFriends(
+            @Parameter(name = "Page of the search")
             @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
+            @Parameter(name = "User of the search", required = true)
             @PathVariable("id") String user
     ) {
         //si el usuario no existe
@@ -411,9 +495,32 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "insertUser",
+            summary = "Insert a user",
+            description = "Inserts a new user to the database. A user can be inserted by anybody."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The friends registered by the user",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "User already exists",
+                    content = @Content
+            )
+    })
     //permite crear un usuario a cualquiera
     @PreAuthorize("permitAll()")
-    ResponseEntity<User> insert(@RequestBody @Valid User user) {
+    ResponseEntity<User> insert(
+            @Parameter(name = "User to insert", required = true)
+            @RequestBody @Valid User user
+    ) {
         //si el usuario ya existe en la base de datos
         if (users.get(user.getEmail()).isPresent()) {
             //devolvemos código de error 409 al haber un conflicto, pues ya existe un usuario con ese correo
@@ -446,9 +553,45 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "addFriend",
+            summary = "Add a friend",
+            description = "Adds a new friend to a user. To add a friend you must be the " +
+                    "requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The friends registered by the user",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Friendship.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User can not be hiw own friend OR field friend can not be empty",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User OR Friend not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Friendship already exists OR not accepted yet",
+                    content = @Content
+            )
+    })
     //solo puede el propio usuario
     @PreAuthorize("#user == principal")
-    ResponseEntity<Friendship> insert(@PathVariable("id") String user, @RequestBody User friend) {
+    ResponseEntity<Friendship> insert(
+            @Parameter(name = "User who adds a friend", required = true)
+            @PathVariable("id") String user,
+            @Parameter(name = "Friend to be added", required = true)
+            @RequestBody User friend
+    ) {
         //si el amigo no se encuentra en la base de datos
         if (!users.get(friend.getEmail()).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -472,7 +615,7 @@ public class UserController {
         //si la amistad ya existe
         if (friendships.getAllFriends(user).contains(friend.getEmail())) {
             //devolvemos código de error 409 al producirse un conflicto
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Friendship exists or not accepted yet");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Friendship already exists or not accepted yet");
         }
         //creamos la amistad
         Friendship result = friendships.insert(user, friend.getEmail());
@@ -499,10 +642,42 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "modifyUser",
+            summary = "Modifies an user",
+            description = "Modify a user from the database. To modify the user you must be the " +
+                    "requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The user was modified",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Field can not be modified OR field can not be removed OR " +
+                            "operation can not be applied to the object",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo puede el propio usuario
     @PreAuthorize("#email == principal")
-    ResponseEntity<User> patch(@PathVariable("id") String email, @RequestBody List<Map<String, Object>> updates) {
+    ResponseEntity<User> patch(
+            @Parameter(name = "User to be modified", required = true)
+            @PathVariable("id") String email,
+            @Parameter(name = "Updates to be applied to the user", required = true)
+            @RequestBody List<Map<String, Object>> updates
+    ) {
         //si el usuario no está presente en la base de datos
         if (!users.get(email).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -556,10 +731,41 @@ public class UserController {
             path = "{user}/friendships/{friendship}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "modifyUser",
+            summary = "Modifies an user",
+            description = "Confirms a friendship from the database. To confirm the friendship you must be " +
+                    "the requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The user was modified",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Friendship already accepted OR user is not the friend",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found OR friendship not found",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //si amigo es el propio usuario
     @PreAuthorize("#user == principal")
-    ResponseEntity<Friendship> put(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+    ResponseEntity<Friendship> put(
+            @Parameter(name = "User who accepts the friendship", required = true)
+            @PathVariable("user") String user,
+            @Parameter(name = "Friendship to be accepted", required = true)
+            @PathVariable("friendship") String friendship
+    ) {
         //si el usuario no está presente en la base de datos
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -570,14 +776,8 @@ public class UserController {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
         }
-        //si la amistad no se encuentra en la base de datos
-        if (friendships.get(friendship).get().getConfirmed() != null) {
-            //devolvemos código de error 404 al producirse un error de búsqueda
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship already accepted");
-        }
         //si el usuario no es el friend, o ya se ha aceptado la amistad
-        if (!user.equals(friendships.get(friendship).get().getFriend()) ||
-                friendships.get(friendship).get().getConfirmed() != null) {
+        if (!user.equals(friendships.get(friendship).get().getFriend())) {
             //devolvemos código de error 400
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not the friend");
         }
@@ -624,10 +824,31 @@ public class UserController {
     @DeleteMapping(
             path = "{id}"
     )
+    @Operation(
+            operationId = "deleteUser",
+            summary = "Deletes a user",
+            description = "Deletes a user from the database. To delete a user you must be the " +
+                    "requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "The user was deleted",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el email para eliminar el usuario
     //solo puede el propio usuario
     @PreAuthorize("#email == principal")
-    ResponseEntity<User> delete(@PathVariable("id") String email) {
+    ResponseEntity<User> delete(
+            @Parameter(name = "User to be deleted", required = true)
+            @PathVariable("id") String email
+    ) {
         //si el usuario no existe
         if (!users.get(email).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -669,11 +890,39 @@ public class UserController {
     @DeleteMapping(
             path = "{user}/friendships/{friendship}"
     )
+    @Operation(
+            operationId = "deleteFriend",
+            summary = "Deletes a friend",
+            description = "Deletes a friend from a user. To delete a friend you must be the " +
+                    "requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "The friend was deleted",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User is not in the friendship OR Friendship not accepted yet",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User OR Friendship not found",
+                    content = @Content
+            )
+    })
     //recoge la variable del user_id, pues necesita buscar el usuario que quiere eliminar el amigo
     //recoge la variable del id, pues necesita buscar la amistad que desea eliminarse
     //solo puede el propio usuario
     @PreAuthorize("#user == principal")
-    ResponseEntity<Friendship> delete(@PathVariable("user") String user, @PathVariable("friendship") String friendship) {
+    ResponseEntity<Friendship> delete(
+            @Parameter(name = "User who deletes the friend", required = true)
+            @PathVariable("user") String user,
+            @Parameter(name = "Friend to be deleted", required = true)
+            @PathVariable("friendship") String friendship
+    ) {
         //si el usuario no se encuentra en la base de datos
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
