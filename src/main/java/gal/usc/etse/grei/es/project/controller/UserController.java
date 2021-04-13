@@ -78,6 +78,11 @@ public class UserController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "User not found",
                     content = @Content
@@ -250,6 +255,11 @@ public class UserController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Assessments OR Users not found",
                     content = @Content
@@ -335,6 +345,11 @@ public class UserController {
             @ApiResponse(
                     responseCode = "400",
                     description = "User doesn't below to the friendship OR the friendship is not accepted yet.",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
                     content = @Content
             ),
             @ApiResponse(
@@ -431,6 +446,11 @@ public class UserController {
                     content = @Content
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "User not found",
                     content = @Content
@@ -503,11 +523,16 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "The friends registered by the user",
+                    description = "The user was inserted",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = User.class)
                     )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
             ),
             @ApiResponse(
                     responseCode = "409",
@@ -571,6 +596,11 @@ public class UserController {
             @ApiResponse(
                     responseCode = "400",
                     description = "User can not be hiw own friend OR field friend can not be empty",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
                     content = @Content
             ),
             @ApiResponse(
@@ -658,6 +688,11 @@ public class UserController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "User not found",
                     content = @Content
@@ -732,8 +767,8 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            operationId = "modifyUser",
-            summary = "Modifies an user",
+            operationId = "confirmFriendship",
+            summary = "Confirms a friendship",
             description = "Confirms a friendship from the database. To confirm the friendship you must be " +
                     "the requested user."
     )
@@ -749,6 +784,11 @@ public class UserController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Friendship already accepted OR user is not the friend",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
                     content = @Content
             ),
             @ApiResponse(
@@ -826,14 +866,19 @@ public class UserController {
     )
     @Operation(
             operationId = "deleteUser",
-            summary = "Deletes a user",
-            description = "Deletes a user from the database. To delete a user you must be the " +
+            summary = "Deletes an user",
+            description = "Deletes an user from the database. To delete a user you must be the " +
                     "requested user."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "204",
                     description = "The user was deleted",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
                     content = @Content
             ),
             @ApiResponse(
@@ -905,6 +950,11 @@ public class UserController {
             @ApiResponse(
                     responseCode = "400",
                     description = "User is not in the friendship OR Friendship not accepted yet",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
                     content = @Content
             ),
             @ApiResponse(

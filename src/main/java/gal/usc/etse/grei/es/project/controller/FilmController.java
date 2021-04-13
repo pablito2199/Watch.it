@@ -57,10 +57,39 @@ public class FilmController {
             path = "{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getOneFilm",
+            summary = "Gets a single film details",
+            description = "Get the details for a given film. To see the film details " +
+                    "you must be logged in."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The film details",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Film not found",
+                    content = @Content
+            )
+    })
     //cogemos la variable id del path y la identificamos con el id
     //si está logueado
     @PreAuthorize("isAuthenticated()")
-    ResponseEntity<Film> get(@PathVariable("id") String id) {
+    ResponseEntity<Film> get(
+            @Parameter(name = "Film id", required = true)
+            @PathVariable("id") String id
+    ) {
         //recuperamos la película indicada
         Optional<Film> result = films.get(id);
 
@@ -92,21 +121,58 @@ public class FilmController {
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getAllFilms",
+            summary = "Gets all registered films",
+            description = "Get the details for the films that are registered. To see the films " +
+                    "you must be logged in."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The films registered",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Films not found",
+                    content = @Content
+            )
+    })
     //recogemos todas las películas paginando con los requestparam
     //si está logueado
     @PreAuthorize("isAuthenticated()")
     ResponseEntity<Page<Film>> get(
             //parámetros a continuación de la interrogación para el filtrado
+            @Parameter(name = "Page of the search")
             @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
+            @Parameter(name = "Sort of the search")
             @RequestParam(name = "sort", defaultValue = "") List<String> sort,
+            @Parameter(name = "Keywords of the search")
             @RequestParam(name = "keywords", required = false) List<String> keywords,
+            @Parameter(name = "Genres of the search")
             @RequestParam(name = "genres", required = false) List<String> genres,
+            @Parameter(name = "Producers of the search")
             @RequestParam(name = "producers", required = false) List<String> producers,
+            @Parameter(name = "Crew of the search")
             @RequestParam(name = "crew", required = false) List<String> crew,
+            @Parameter(name = "Casts of the search")
             @RequestParam(name = "cast", required = false) List<String> cast,
+            @Parameter(name = "Day of publish of the search")
             @RequestParam(name = "day", required = false) Integer day,
+            @Parameter(name = "Month of publish of the search")
             @RequestParam(name = "month", required = false) Integer month,
+            @Parameter(name = "Year of publish of the search")
             @RequestParam(name = "year", required = false) Integer year
     ) {
         //ordenamos por fecha de estreno
@@ -192,9 +258,36 @@ public class FilmController {
             path = "assessments/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "getOneAssessment",
+            summary = "Gets an assessment details",
+            description = "Get the details for a given assessment. To see the assessment " +
+                    "you must be logged in."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The assessment details",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Assessment not found",
+                    content = @Content
+            )
+    })
     //si está logueado
     @PreAuthorize("isAuthenticated()")
     ResponseEntity<Assessment> getAssessment(
+            @Parameter(name = "Assessment id", required = true)
             @PathVariable("id") String assessment
     ) {
         //recuperamos la valoración obtenida
@@ -239,8 +332,13 @@ public class FilmController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
                     responseCode = "404",
-                    description = "Assessments or Film not found",
+                    description = "Assessments OR Film not found",
                     content = @Content
             )
     })
@@ -306,9 +404,33 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "insertFilm",
+            summary = "Inserts a new film to the database",
+            description = "Insert a new film. To insert a new film " +
+                    "you must have admin permissions."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The film was inserted",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            )
+    })
     //solo se permite a los administradores
     @PreAuthorize("hasRole('ADMIN')")
-    ResponseEntity<Film> insert(@RequestBody @Valid Film film) {
+    ResponseEntity<Film> insert(
+            @Parameter(name = "Film to insert", required = true)
+            @RequestBody @Valid Film film
+    ) {
         //guardamos la película en la base de datos
         Film result = films.insert(film);
 
@@ -337,9 +459,48 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "insertAssessment",
+            summary = "Inserts a new assessment to the database",
+            description = "Insert a new assessment. To insert a new assessment " +
+                    "you must be logged in and be the requested user of the assessment."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The assessment was inserted",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User OR film field can not be empty",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User OR film not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "User already wrote an assessment for that film",
+                    content = @Content
+            )
+    })
     //si está logueado
     @PreAuthorize("isAuthenticated() and #assessment.user.email == principal")
-    ResponseEntity<Assessment> insertAssessment(@RequestBody @Valid Assessment assessment) {
+    ResponseEntity<Assessment> insertAssessment(
+            @Parameter(name = "Assessment to insert", required = true)
+            @RequestBody @Valid Assessment assessment
+    ) {
         //si no se indica correctamente el email del usuario
         if (assessment.getUser().getEmail() == null) {
             //devolvemos código de error 400 al intentar añadir una valoración con usuario sin email
@@ -390,10 +551,46 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "modifyFilm",
+            summary = "Modifies a film from the database",
+            description = "Modifies an existing film. To modify a film " +
+                    "you must have admin permissions."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The film was modified",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Film not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Can not remove the title OR id field OR operation can not be applied to the object",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo se permite a los administradores
     @PreAuthorize("hasRole('ADMIN')")
-    ResponseEntity<Film> patch(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
+    ResponseEntity<Film> patch(
+            @Parameter(name = "Film to be modified", required = true)
+            @PathVariable("id") String id,
+            @Parameter(name = "Updates to be applied to the film", required = true)
+            @RequestBody List<Map<String, Object>> updates
+    ) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -441,10 +638,46 @@ public class FilmController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            operationId = "modifyAssessment",
+            summary = "Modifies an assessment from the database",
+            description = "Modifies an existing assessment. To modify an assessment " +
+                    "you must be the request user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "The assessment was modified",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Assessment not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Can not modify OR remove films specified OR operation can not be applied to the object",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el id que modificar, y el body con el objeto
     //solo el propio usuario
     @PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
-    ResponseEntity<Assessment> patchAssessment(@PathVariable("id") String id, @RequestBody List<Map<String, Object>> updates) {
+    ResponseEntity<Assessment> patchAssessment(
+            @Parameter(name = "Assessment to be modified", required = true)
+            @PathVariable("id") String id,
+            @Parameter(name = "Updates to be applied to the assessment", required = true)
+            @RequestBody List<Map<String, Object>> updates
+    ) {
         //si la valoración no está presente en la base de datos
         if (!assessments.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -499,10 +732,36 @@ public class FilmController {
     @DeleteMapping(
             path = "{id}"
     )
+    @Operation(
+            operationId = "deleteFilm",
+            summary = "Deletes a film",
+            description = "Deletes a film from the database. To delete a film you must have " +
+                    "admin permissions."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "The film was deleted",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Film not found",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el id para eliminar la película
     //solo se permite a los administradores
     @PreAuthorize("hasRole('ADMIN')")
-    ResponseEntity<Film> delete(@PathVariable("id") String id) {
+    ResponseEntity<Film> delete(
+            @Parameter(name = "Film to be deleted", required = true)
+            @PathVariable("id") String id
+    ) {
         //si la película no existe en la base de datos
         if (!films.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
@@ -536,6 +795,29 @@ public class FilmController {
     @DeleteMapping(
             path = "assessments/{id}"
     )
+    @Operation(
+            operationId = "deleteAssessment",
+            summary = "Deletes an assessment",
+            description = "Deletes an assessment from the database. To delete the assessment you " +
+                    "must have admin permissions or be the requested user."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "The assessment was deleted",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Do not have sufficient permissions",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Assessment not found",
+                    content = @Content
+            )
+    })
     //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
     //solo pueden admin y el propio usuario
     @PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
