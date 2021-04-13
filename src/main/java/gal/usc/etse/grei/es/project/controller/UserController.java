@@ -778,7 +778,7 @@ public class UserController {
                     description = "The user was modified",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Friendship.class)
                     )
             ),
             @ApiResponse(

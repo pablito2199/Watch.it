@@ -69,7 +69,7 @@ public class FilmController {
                     description = "The film details",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Film.class)
                     )
             ),
             @ApiResponse(
@@ -133,7 +133,7 @@ public class FilmController {
                     description = "The films registered",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Film.class)
                     )
             ),
             @ApiResponse(
@@ -270,7 +270,7 @@ public class FilmController {
                     description = "The assessment details",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Assessment.class)
                     )
             ),
             @ApiResponse(
@@ -328,7 +328,7 @@ public class FilmController {
                     description = "The assessments registered to a film",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Assessment.class)
                     )
             ),
             @ApiResponse(
@@ -416,7 +416,7 @@ public class FilmController {
                     description = "The film was inserted",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Film.class)
                     )
             ),
             @ApiResponse(
@@ -471,7 +471,7 @@ public class FilmController {
                     description = "The assessment was inserted",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Assessment.class)
                     )
             ),
             @ApiResponse(
@@ -563,7 +563,7 @@ public class FilmController {
                     description = "The film was modified",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Film.class)
                     )
             ),
             @ApiResponse(
@@ -650,7 +650,7 @@ public class FilmController {
                     description = "The assessment was modified",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = Assessment.class)
                     )
             ),
             @ApiResponse(
