@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,9 @@ import java.util.Map;
 @RequestMapping("/login")
 @Tag(name = "Authentication API", description = "Authentication operations")
 public class AuthController {
-    @PostMapping()
+    @PostMapping(
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @Operation(
             operationId = "login",
             summary = "Login",

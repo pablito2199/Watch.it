@@ -57,7 +57,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // Deshabilitamos a protección contra ataques CSRF
-        http.csrf().disable()
+        http.cors().and().csrf().disable()
                 // Indicamos que por defecto permitimos o acceso de calquera a todos os servizos
                 .authorizeRequests().anyRequest().permitAll()
                 .and()
