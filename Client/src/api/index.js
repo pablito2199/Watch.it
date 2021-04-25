@@ -19,29 +19,23 @@ export default class API {
             body: JSON.stringify({ email: email, password: pass })
         };
         const response = await fetch(`http://localhost:8080/login`, requestOptions);
-        console.log(response)
-        localStorage.setItem('user', email)
-        localStorage.setItem('token', response.headers.get("Authentication"))
-        this.#token = response.headers.get("Authentication")
-        return true
-
-        //const user = DATA.users.find(u => u.email === email)
-
-        /*if (user.password === pass) {
+        if (response.status === 200) {
             localStorage.setItem('user', email)
-            localStorage.setItem('token', 'TEST TOKEN')
-            this.#token = 'TEST TOKEN'
+            localStorage.setItem('token', response.headers.get("Authentication"))
+            this.#token = response.headers.get("Authentication")
             return true
-        } else {
+        } else if (response.status === 401) {
             return false
-        }*/
+        }
     }
+
     async logout() {
         this.#token = null
         localStorage.clear()
 
         return true
     }
+
     async findMovies(
         {
             filter: { genre = '', title = '', status = '' } = { genre: '', title: '', status: '' },
@@ -70,15 +64,43 @@ export default class API {
             resolve(data)
         })
     }
-    async findMovie(id) {
-        return DATA.movies.find(movie => movie.id === id)
-    }
-    async findUser(id) {
-        /*return new Promise(resolve => {
-            const user = DATA.users.find(user => user.email === id)
 
-            resolve(user)
-        })*/
+    /*async findMovies() {
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": this.#token
+            }
+        };
+        const response = await fetch(`http://localhost:8080/films`, requestOptions);
+        if (response.status === 200) {
+            return await response.json()
+        } else if (response.status === 404) {
+            this.props.history.push("/404");
+        }
+        return await response.json()
+    }*/
+
+    async findMovie(id) {
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": this.#token
+            }
+        };
+        const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
+        if (response.status === 200) {
+            return await response.json()
+        } else if (response.status === 404) {
+            this.props.history.push("/404");
+        }
+        return await response.json()
+        //return DATA.movies.find(movie => movie.id === id)
+    }
+
+    async findUser(id) {
         const requestOptions = {
             method: "GET",
             headers: {
@@ -87,6 +109,26 @@ export default class API {
             }
         };
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
+        if (response.status === 200) {
+            return await response.json()
+        } else if (response.status === 404) {
+            this.props.history.push("/404");
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //MIRAR POR QUE NO CARGA EL PERFIL BIEN AL HACER F5
         return await response.json()
     }
 
@@ -117,19 +159,76 @@ export default class API {
         })
     }
 
-    async createComment(comment) {
-        return new Promise(resolve => {
-            DATA.comments.unshift(comment)
+    async createComment(assessment) {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                rating: assessment.rating,
+                user: assessment.user,
+                film: assessment.film,
+                comment: assessment.comment
+            })
+        };
+        const response = await fetch(`http://localhost:8080/films/assessments`, requestOptions);
 
-            resolve(true)
-        })
+        if (response.status === 200) {
+            return true
+        } else if (response.status === 403) {
+            return false
+        } else if (response.status === 409) {
+            return false
+        }
     }
 
     async createUser(user) {
-        console.log(user)
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: user.email,
+                name: user.name,
+                password: user.password,
+                birthday: {
+                    day: user.birthday.day,
+                    month: user.birthday.month,
+                    year: user.birthday.year
+                },
+                roles: ["ROLE_USER"]
+            })
+        };
+        const response = await fetch(`http://localhost:8080/users`, requestOptions);
+
+        if (response.status === 200) {
+            return true
+        } else if (response.status === 403) {
+            return false
+        } else if (response.status === 409) {
+            return false
+        }
     }
 
     async updateUser(id, user) {
-        console.log(user)
+        const requestOptions = {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                op: "",
+                path: "",
+                value: ""
+            })
+        };
+        const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
+
+        if (response.status === 200) {
+            localStorage.setItem('user', user.email)
+            localStorage.setItem('token', response.headers.get("Authentication"))
+            this.#token = response.headers.get("Authentication")
+            return true
+        } else if (response.status === 403) {
+            return false
+        } else if (response.status === 409) {
+            return false
+        }
     }
 }
