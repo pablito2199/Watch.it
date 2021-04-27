@@ -55,17 +55,12 @@ export default class API {
             }
         };
 
-
-
-        //LA PELICULA LOS OJOS DE LA GUERRA NO TIENE POSTER, CON LO CUAL NO CARGA
-        //NO OBSTANTE SE COMPRUEBA QUE NO ESTÉ A NULL ESTA ANTES DE CARGARSE
-
         let parameters = `?page=${page}&size=${size}`
         if (genre !== '') {
             parameters += `&genres=${genre}`
         }
         if (title !== '') {
-            parameters += `&title=${title}`
+            parameters += `&keywords=${title}`
         }
         if (status !== '') {
             parameters += `&status=${status}`
@@ -75,6 +70,7 @@ export default class API {
         }
 
         const response = await fetch(`http://localhost:8080/films${parameters}`, requestOptions);
+        console.log(response)
         if (response.status === 200) {
             return await response.json()
         } else if (response.status === 404) {

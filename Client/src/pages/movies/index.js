@@ -63,7 +63,7 @@ export default function Movies() {
                        paginationVariant = 'primary'
                        className = 'pt-6 pb-12 max-w-screen-2xl'
                        titleClassName = 'select-none bg-gradient-to-br from-pink-500 to-yellow-500 via-red-500 p-2 uppercase text-white inline-block transform -skew-x-12 -rotate-3 translate-y-4'
-                       query = {{filter: {'title': 'LEGO'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
+                       query = {{filter: {'title': 'lego'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
             />
         </section>
     </Shell>
