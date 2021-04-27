@@ -18,7 +18,7 @@ export default function Movies() {
                        paginationVariant = 'plain-secondary'
                        className = 'pt-6 pb-12 max-w-screen-2xl'
                        titleClassName = 'select-none bg-black p-2 uppercase text-white inline-block transform -skew-x-12 -rotate-3 translate-y-4'
-                       query = {{filter: {'genre': 'acción'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
+                       query = {{filter: {'genre': 'Acción'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
             />
         </section>
 
@@ -27,7 +27,7 @@ export default function Movies() {
                        paginationVariant = 'primary'
                        className = 'pt-6 pb-12 max-w-screen-2xl'
                        titleClassName = 'select-none bg-gradient-to-br from-pink-500 to-yellow-500 via-red-500 p-2 uppercase text-white inline-block transform -skew-x-12 -rotate-3 translate-y-4'
-                       query = {{filter: {'genre': 'animación'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
+                       query = {{filter: {'genre': 'Animación'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
             />
         </section>
 
@@ -36,7 +36,7 @@ export default function Movies() {
                        paginationVariant = 'plain-secondary'
                        className = 'pt-6 pb-12 max-w-screen-2xl'
                        titleClassName = 'select-none bg-black p-2 uppercase text-white inline-block transform -skew-x-12 -rotate-3 translate-y-4'
-                       query = {{filter: {'genre': 'ciencia ficción'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
+                       query = {{filter: {'genre': 'Ciencia ficción'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
             />
         </section>
 
@@ -45,7 +45,7 @@ export default function Movies() {
                        paginationVariant = 'primary'
                        className = 'pt-6 pb-12 max-w-screen-2xl'
                        titleClassName = 'select-none bg-gradient-to-br from-pink-500 to-yellow-500 via-red-500 p-2 uppercase text-white inline-block transform -skew-x-12 -rotate-3 translate-y-4'
-                       query = {{filter: {'genre': 'documental'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
+                       query = {{filter: {'genre': 'Documental'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
             />
         </section>
 
@@ -54,7 +54,7 @@ export default function Movies() {
                        paginationVariant = 'plain-secondary'
                        className = 'pt-6 pb-12 max-w-screen-2xl'
                        titleClassName = 'select-none bg-black p-2 uppercase text-white inline-block transform -skew-x-12 -rotate-3 translate-y-4'
-                       query = {{filter: {'genre': 'fantasía'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
+                       query = {{filter: {'genre': 'Fantasía'}, sort: { 'releaseDate': 'ASC' }, pagination: { size: 7 }}}
             />
         </section>
 
