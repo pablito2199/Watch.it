@@ -1,5 +1,3 @@
-import DATA from './data'
-
 let __instance = null
 
 export default class API {
