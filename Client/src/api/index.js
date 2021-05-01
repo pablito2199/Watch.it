@@ -16,6 +16,7 @@ export default class API {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: pass })
         };
+        console.log(requestOptions.body)
         const response = await fetch(`http://localhost:8080/login`, requestOptions);
         if (response.status === 200) {
             localStorage.setItem('user', email)
@@ -105,7 +106,7 @@ export default class API {
         if (response.status === 200) {
             return await response.json()
         } else if (response.status === 404) {
-            
+
         }
         return await response.json()
     }
@@ -148,14 +149,22 @@ export default class API {
     async createComment(assessment) {
         const requestOptions = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": this.#token
+            },
             body: JSON.stringify({
                 rating: assessment.rating,
-                user: assessment.user,
-                film: assessment.film,
+                user: {
+                    email: assessment.user
+                },
+                film: {
+                    id: assessment.film
+                },
                 comment: assessment.comment
             })
         };
+        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/films/assessments`, requestOptions);
 
         if (response.status === 200) {

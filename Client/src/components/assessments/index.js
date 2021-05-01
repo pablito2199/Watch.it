@@ -1,11 +1,12 @@
 import { FilmOutline as Film } from '@graywolfai/react-heroicons'
-import { Button, Input } from '../'
+import { useState } from 'react'
+import { Button } from '../'
 
-export function Assessments({ comments, createComment }) {
+export function Assessments({ comments, createComment, film }) {
     let render = []
 
     render.push(<ObtainComments comments={comments} />)
-    render.push(<CreateComment />)
+    render.push(<CreateComment createComment={createComment} film={film}/>)
 
     return render
 }
@@ -46,61 +47,53 @@ function ObtainComments({ comments }) {
     return render
 }
 
-const submit = async (event) => {
-    event.preventDefault()
-    const data = new FormData(event.target)
-
-    /*await createComment({
-        user: "pablo@gmail.com",
-        film: "10191",
-        comment: data.get('comment'),
-        rating: 9
-    })*/
-
-    window.location.reload();
+function Ratings({ ratings, setRating }) {
+    return <div className='mt-4'>
+        {
+            [...Array(10)].map((v, i) => (
+                i < ratings
+                    ?
+                    <Film
+                        className={`cursor-pointer inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 text-white`}
+                        onClick={() => setRating(i + 1)}
+                    />
+                    :
+                    <Film
+                        className={`cursor-pointer inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gray-300 text-white`}
+                        onClick={() => setRating(i + 1)}
+                    />
+            ))
+        }
+    </div>
 }
 
-function value(rating) {
-    let children = []
+function CreateComment({ createComment, film }) {
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
 
-    for (let i = 1; i <= 10; i++) {
-        if (i <= rating) {
-            children.push(
-                <Film
-                    key={i}
-                    className={`cursor-pointer inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 text-white`}
-                    //onClick={value(this.key)}
-                />);
-        } else {
-            children.push(
-                <Film
-                    key={i}
-                    className={`cursor-pointer inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gray-300 text-white`}
-                    //onClick={value(this.key)}
-                />);
-        }
+    const submit = async (event) => {
+        await createComment({
+            user: localStorage.getItem('user'),
+            film: film,
+            comment: comment,
+            rating: rating
+        })
+        setRating(0)
+        //NO BORRA EL COMENTARIO DEL TEXTAREA
+        setComment('')
     }
 
-    return children
-}
-
-function CreateComment() {
-    return <form className='w-full h-64 mt-10 flex justify-start'
-        onSubmit={submit}
-    >
+    return <div className='w-full h-64 mt-10 flex justify-start'>
         <div className='flex flex-col md:w-64'>
             <p className='font-bold'>Y a ti, ¿qué te ha parecido?</p>
-            <div className='mt-4'>
-                {
-                    value(5)
-                }
-            </div>
-            <Button className='mt-32' type='submit' variant='primary'>Publicar</Button>
+            <Ratings ratings={rating} setRating={setRating} />
+            <Button className='mt-32' type='submit' variant='primary' onClick={submit}>Publicar</Button>
         </div>
         <textarea name='search'
             type='text'
             placeholder='Escribe aquí tu comentario y comparte tu opinión con otros usuarios! Pero por favor, evita hacer spoilers...'
-            className='p-4 ml-8 bg-white rounded placeholder-gray-400 font-medium border w-full'
+            className='md:p-4 ml-8 bg-white rounded placeholder-gray-400 font-medium border w-full'
+            onChange={(event) => setComment(event.target.value)}
         />
-    </form>
+    </div>
 }

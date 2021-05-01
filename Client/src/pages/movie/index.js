@@ -123,7 +123,7 @@ function Comments({ movie }) {
     return <>
         <h2 className='mt-16 font-bold text-2xl'> Comentarios</h2>
         <Separator />
-        <Assessments comments={comments} createComment={createComment}/>
+        <Assessments comments={comments} createComment={createComment} film={movie.id}/>
     </>
 }
 function Tagline({ movie }) {
