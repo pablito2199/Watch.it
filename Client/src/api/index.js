@@ -68,7 +68,6 @@ export default class API {
         }
 
         const response = await fetch(`http://localhost:8080/films${parameters}`, requestOptions);
-        console.log(response)
         if (response.status === 200) {
             return await response.json()
         } else if (response.status === 404) {

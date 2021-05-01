@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { ArrowCircleLeftOutline as Back, PencilAltOutline as Edit } from '@graywolfai/react-heroicons'
 import ReactPlayer from 'react-player'
 
-import { Shell, Link, TODO, Separator, Assessments } from '../../components'
+import { Shell, Link, Separator, Assessments } from '../../components'
 
 import { useMovie, useComments } from '../../hooks'
 
@@ -79,9 +79,9 @@ function Info({ movie }) {
             <h2 className='font-bold text-2xl text-white bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow'>
                 Argumento
             </h2>
-            <p className='pt-8 p-4'>
+            <textarea className='pt-8 p-4 w-full h-full'>
                 {movie.overview}
-            </p>
+            </textarea>
         </div>
         <div className='text-right'>
             <dl className='space-y-2'>
@@ -123,7 +123,7 @@ function Comments({ movie }) {
     return <>
         <h2 className='mt-16 font-bold text-2xl'> Comentarios</h2>
         <Separator />
-        <Assessments>Añadir lista de comentarios y formulario para añadir nuevo comentario</Assessments>
+        <Assessments comments={comments} createComment={createComment}/>
     </>
 }
 function Tagline({ movie }) {
