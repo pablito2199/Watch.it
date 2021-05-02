@@ -16,7 +16,6 @@ export default class API {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: pass })
         };
-        console.log(requestOptions.body)
         const response = await fetch(`http://localhost:8080/login`, requestOptions);
         if (response.status === 200) {
             localStorage.setItem('user', email)
@@ -164,7 +163,6 @@ export default class API {
                 comment: assessment.comment
             })
         };
-        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/films/assessments`, requestOptions);
 
         if (response.status === 200) {

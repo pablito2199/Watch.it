@@ -79,9 +79,9 @@ function Info({ movie }) {
             <h2 className='font-bold text-2xl text-white bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow'>
                 Argumento
             </h2>
-            <textarea className='pt-8 p-4 w-full h-full'>
-                {movie.overview}
-            </textarea>
+            <p className = 'pt-8 p-4'>
+                { movie.overview }
+            </p>
         </div>
         <div className='text-right'>
             <dl className='space-y-2'>

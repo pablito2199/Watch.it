@@ -1,17 +1,54 @@
+import React from 'react';
 import { FilmOutline as Film } from '@graywolfai/react-heroicons'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '../'
+import Right from './icons/derecho.png'
 
 export function Assessments({ comments, createComment, film }) {
-    let render = []
+    const [width, setWidth] = useState(0);
+    const scroll = useRef(null)
 
-    render.push(<ObtainComments comments={comments} />)
-    render.push(<CreateComment createComment={createComment} film={film}/>)
-
-    return render
+    return <>
+        {
+            comments.content != null
+            &&
+            <div className='flex'>
+                <div ref={scroll} className={`flex gap-8 overflow-hidden`}>
+                    <ObtainComments comments={comments} />
+                </div>
+                <div className='h-96 cursor-pointer absolute right-0 w-16 bg-white opacity-80'></div>
+                <button
+                    className='h-96 absolute right-0 w-16'
+                    onClick={() => {
+                        scroll.current.scrollLeft += 400
+                        setWidth(scroll.current.scrollLeft)
+                    }}
+                >
+                    <img className='ml-3 h-10' src={Right} alt='' />
+                </button>
+                {
+                    width > 0
+                    &&
+                    <>
+                        <div className='h-96 cursor-pointer absolute w-16 bg-white opacity-80'></div>
+                        <button
+                            className='h-96 cursor-pointer absolute w-16'
+                            onClick={() => {
+                                scroll.current.scrollLeft -= 400
+                                setWidth(scroll.current.scrollLeft)
+                            }}
+                        >
+                            <img className='ml-3 h-10 transform rotate-180' src={Right} alt='' />
+                        </button>
+                    </>
+                }
+            </div>
+        }
+        <CreateComment createComment={createComment} film={film} />
+    </>
 }
 
-function createRating(rating) {
+function getRating(rating) {
     let children = []
 
     for (let i = 0; i < 10; i++) {
@@ -28,21 +65,19 @@ function createRating(rating) {
 function ObtainComments({ comments }) {
     let render = <></>
 
-    if (comments.content != null) {
-        render = comments.content.map((comment) =>
-            <div key={comment.id} className='h-96 w-4/6 bg-white rounded p-4 flex flex-col shadow-md border-2'>
-                <div className='ml-8 mt-4 flex justify-between'>
-                    <span className='font-bold'>{comment.user.email}</span>
-                    <div className='text-right mr-10'>
-                        {
-                            createRating(comment.rating)
-                        }
-                    </div>
+    render = comments.content.map((comment) =>
+        <div key={comment.id} className='h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
+            <div className='ml-8 mt-4 flex justify-between'>
+                <span className='font-bold'>{comment.user.name}</span>
+                <div className='text-right mr-10'>
+                    {
+                        getRating(comment.rating)
+                    }
                 </div>
-                <p className='p-8 md:overflow-hidden'>{comment.comment}</p>
             </div>
-        );
-    }
+            <p className='p-10 md:overflow-hidden'>{comment.comment}</p>
+        </div>
+    );
 
     return render
 }
@@ -70,17 +105,21 @@ function Ratings({ ratings, setRating }) {
 function CreateComment({ createComment, film }) {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
+    const textField = React.createRef()
 
     const submit = async (event) => {
-        await createComment({
-            user: localStorage.getItem('user'),
-            film: film,
-            comment: comment,
-            rating: rating
-        })
-        setRating(0)
-        //NO BORRA EL COMENTARIO DEL TEXTAREA
-        setComment('')
+        if (comment !== '') {
+            console.log(textField.current.value)
+            await createComment({
+                user: localStorage.getItem('user'),
+                film: film,
+                comment: comment,
+                rating: rating
+            })
+            setRating(0)
+            textField.current.value = ''
+            setComment('')
+        }
     }
 
     return <div className='w-full h-64 mt-10 flex justify-start'>
@@ -89,10 +128,12 @@ function CreateComment({ createComment, film }) {
             <Ratings ratings={rating} setRating={setRating} />
             <Button className='mt-32' type='submit' variant='primary' onClick={submit}>Publicar</Button>
         </div>
-        <textarea name='search'
+        <textarea
+            name='search'
             type='text'
             placeholder='Escribe aquí tu comentario y comparte tu opinión con otros usuarios! Pero por favor, evita hacer spoilers...'
             className='md:p-4 ml-8 bg-white rounded placeholder-gray-400 font-medium border w-full'
+            ref={textField}
             onChange={(event) => setComment(event.target.value)}
         />
     </div>
