@@ -1,8 +1,7 @@
 import React from 'react';
-import { FilmOutline as Film } from '@graywolfai/react-heroicons'
+import { FilmSolid as RatingIcon, ChevronRightOutline as ArrowRight, ChevronLeftOutline as ArrowLeft } from '@graywolfai/react-heroicons'
 import { useState, useRef } from 'react'
 import { Button } from '../'
-import Right from './icons/derecho.png'
 
 export function Assessments({ comments, createComment, film }) {
     const [width, setWidth] = useState(0);
@@ -24,7 +23,7 @@ export function Assessments({ comments, createComment, film }) {
                         setWidth(scroll.current.scrollLeft)
                     }}
                 >
-                    <img className='ml-3 h-10' src={Right} alt='' />
+                    <ArrowRight className='ml-3 h-10' />
                 </button>
                 {
                     width > 0
@@ -38,7 +37,7 @@ export function Assessments({ comments, createComment, film }) {
                                 setWidth(scroll.current.scrollLeft)
                             }}
                         >
-                            <img className='ml-3 h-10 transform rotate-180' src={Right} alt='' />
+                            <ArrowLeft className='ml-3 h-10' />
                         </button>
                     </>
                 }
@@ -53,9 +52,9 @@ function getRating(rating) {
 
     for (let i = 0; i < 10; i++) {
         if (i < rating) {
-            children.push(<Film className={`inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 text-white`} />);
+            children.push(<RatingIcon className={`inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 text-white`} />);
         } else {
-            children.push(<Film className={`inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gray-300 text-white`} />);
+            children.push(<RatingIcon className={`inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gray-300 text-white`} />);
         }
     }
 
@@ -88,12 +87,12 @@ function Ratings({ ratings, setRating }) {
             [...Array(10)].map((v, i) => (
                 i < ratings
                     ?
-                    <Film
+                    <RatingIcon
                         className={`cursor-pointer inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 text-white`}
                         onClick={() => setRating(i + 1)}
                     />
                     :
-                    <Film
+                    <RatingIcon
                         className={`cursor-pointer inline p-0.5 m-0.5 transform rotate-6 w-4 h-4 rounded-full bg-gray-300 text-white`}
                         onClick={() => setRating(i + 1)}
                     />

@@ -108,7 +108,7 @@ function View({ movie }) {
 }
 function Cast({ movie }) {
     return <>
-        <h2 className='mt-16 font-bold text-2xl'> Principal</h2>
+        <h2 className='mt-16 font-bold text-2xl'>Reparto Principal</h2>
         <Separator />
         <ul className='w-full grid grid-cols-10 gap-2 overflow-hidden'>
             {
