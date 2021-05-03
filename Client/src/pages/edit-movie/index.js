@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ArrowCircleLeftOutline as Back, SaveOutline as Save } from '@graywolfai/react-heroicons'
 import ReactPlayer from 'react-player'
@@ -24,7 +25,25 @@ const poster = movie => movie?.resources?.find(res => res?.type === 'POSTER')?.u
 
 export default function Profile() {
     const { id } = useParams()
-    const movie = useMovie(id)
+    const { movie, updateMovie } = useMovie(id)
+
+    const submit = async (event) => {
+        await updateMovie({
+            title: movie.title,
+            overview: movie.overview,
+            tagline: movie.tagline,
+            genres: movie.genres,
+            releaseDate: movie.releaseDate,
+            keywords: movie.keywords,
+            producers: movie.producers,
+            crew: movie.crew,
+            resources: movie.resources,
+            budget: movie.budget,
+            status: movie.status,
+            runtime: movie.runtime,
+            revenue: movie.revenue
+        })
+    }
 
     return <Shell>
         <img style={{ height: '36rem' }}
@@ -44,7 +63,10 @@ export default function Profile() {
             className='rounded-full absolute text-white top-4 right-8 flex items-center px-2 py-2 gap-4'
             to={`/movies/${id}`}
         >
-            <Save className='w-8 h-8' />
+            <Save
+                className='w-8 h-8'
+                onClick={submit}
+            />
         </Link>
 
         <div className='mx-auto w-full max-w-screen-2xl p-8'>
@@ -65,7 +87,7 @@ function Header({ movie }) {
         <hgroup className='flex-1'>
             <Input className={`bg-black bg-opacity-50 backdrop-filter backdrop-blur 
                                           text-right text-white text-6xl font-bold
-                                          p-8 w-full h-full`} defaultValue={movie.title}/>
+                                          p-8 w-full h-full`} defaultValue={movie.title} onChange={(event) => movie.title = (event.target.value)} />
             <Tagline movie={movie} />
         </hgroup>
     </header>
@@ -76,7 +98,7 @@ function Info({ movie }) {
             <h2 className='font-bold text-2xl text-white bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow'>
                 Argumento
             </h2>
-            <textarea className = 'pt-8 p-4 w-full h-40' defaultValue={movie.overview} />
+            <textarea className='pt-8 p-4 w-full h-40' defaultValue={movie.overview} onChange={(event) => movie.overview = (event.target.value)} />
         </div>
         <div className='text-right'>
             <dl className='space-y-2'>
@@ -114,7 +136,11 @@ function Cast({ movie }) {
 }
 function Tagline({ movie }) {
     if (movie.tagline) {
-        return <Input className={`block text-3xl font-semibold text-black italic w-full px-8 py-4 text-right italic mt-2`} defaultValue={movie.tagline}/>
+        return <Input
+            className={`block text-3xl font-semibold text-black italic w-full px-8 py-4 text-right italic mt-2`}
+            defaultValue={movie.tagline}
+            onChange={(event) => movie.tagline = (event.target.value)}
+        />
     } else {
         return <span className='block text-3xl font-semibold py-4'>&nbsp;</span>
     }

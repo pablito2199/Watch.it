@@ -16,6 +16,7 @@ export default class API {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: pass })
         };
+        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/login`, requestOptions);
         if (response.status === 200) {
             localStorage.setItem('user', email)
@@ -212,6 +213,34 @@ export default class API {
             })
         };
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
+
+        if (response.status === 200) {
+            return true
+        } else if (response.status === 403) {
+            return false
+        } else if (response.status === 409) {
+            return false
+        }
+    }
+
+    async updateMovie(id, film) {
+        let body = JSON.stringify([{
+            "op": "replace",
+            "path": "/title",
+            "value": film.title
+        }])
+
+        const requestOptions = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": this.#token
+            },
+            body: body
+        };
+
+        console.log(requestOptions)
+        const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
 
         if (response.status === 200) {
             return true

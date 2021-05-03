@@ -17,14 +17,24 @@ export function useMovies(query = {}) {
 
 export function useMovie(id = '') {
     const [data, setData] = useState({})
+    const movieId = id
 
     useEffect(() => {
         API.instance()
             .findMovie(id)
-            .then(setData)
-    }, [id])
+            .then(movie => {
+                setData(movie)
+            })
+    }, [movieId])
 
-    return data
+    const update = movie => {API.instance()
+        .updateMovie(id, movie)
+        .then(movie => setData(movie))} 
+
+    return {
+        movie: data,
+        updateMovie: update
+    }
 }
 
 export function useUser(id = null) {

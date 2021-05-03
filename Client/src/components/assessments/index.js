@@ -108,7 +108,6 @@ function CreateComment({ createComment, film }) {
 
     const submit = async (event) => {
         if (comment !== '') {
-            console.log(textField.current.value)
             await createComment({
                 user: localStorage.getItem('user'),
                 film: film,

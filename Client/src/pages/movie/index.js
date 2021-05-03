@@ -24,7 +24,7 @@ const poster = movie => movie?.resources?.find(res => res?.type === 'POSTER')?.u
 
 export default function Movie() {
     const { id } = useParams()
-    const movie = useMovie(id)
+    const { movie, updateMovie } = useMovie(id)
 
     return <Shell>
         <img style={{ height: '36rem' }}
