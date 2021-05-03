@@ -35,7 +35,7 @@ public class User {
     @NotBlank(message = "The password field can not be empty")
     @Schema(example = "Abc123.@")
     private String password;
-    @Schema(example = "ROLE_ADMIN")
+    @Schema(example = "[\"ROLE_ADMIN\"]")
     private List<String> roles;
 
     public User() {

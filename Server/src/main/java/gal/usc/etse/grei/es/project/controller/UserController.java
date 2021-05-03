@@ -145,6 +145,11 @@ public class UserController {
                     responseCode = "404",
                     description = "Users not found",
                     content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "415",
+                    description = "Unsupported Media Type for user",
+                    content = @Content
             )
     })
     //recogemos todos los usuarios paginando con los requestparam
@@ -528,6 +533,11 @@ public class UserController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = User.class)
                     )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Wrong arguments for user",
+                    content = @Content
             ),
             @ApiResponse(
                     responseCode = "403",

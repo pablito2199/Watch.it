@@ -23,10 +23,10 @@ public class Film {
     @Schema(example = "Why are we here?")
     private String tagline;
     private Collection collection;
-    @Schema(example = "Drama, Comedy")
+    @Schema(example = "[\"Drama\", \"Comedy\"]")
     private List<String> genres;
     private Date releaseDate;
-    @Schema(example = "french, war")
+    @Schema(example = "[\"french\", \"war\"]")
     private List<String> keywords;
     private List<Producer> producers;
     private List<Crew> crew;
