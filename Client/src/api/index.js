@@ -132,6 +132,7 @@ export default class API {
 
         let filter
         movie !== '' ? filter = `films/${movie}/` : filter = `users/${user}/`
+        console.log(filter)
         let parameters = `?page=${page}&size=${size}`
         for (let key in sort) {
             sort[key] === 'ASC' ? parameters += `&sort=+${key}` : parameters += `&sort=-${key}`

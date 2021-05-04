@@ -104,7 +104,7 @@ function Ratings({ ratings, setRating }) {
 function CreateComment({ createComment, film }) {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
-    const textField = React.createRef()
+    const textField = useRef(null)
 
     const submit = async (event) => {
         if (comment !== '') {
@@ -115,7 +115,7 @@ function CreateComment({ createComment, film }) {
                 rating: rating
             })
             setRating(0)
-            textField.current.value = ''
+                textField.current.value = ''
             setComment('')
         }
     }
