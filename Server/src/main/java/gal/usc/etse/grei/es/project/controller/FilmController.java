@@ -824,7 +824,7 @@ public class FilmController {
     //solo pueden admin y el propio usuario
     @PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> deleteAssessment(
-            @Parameter(name="id", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String id
     ) {
         //si la valoración no existe en la base de datos

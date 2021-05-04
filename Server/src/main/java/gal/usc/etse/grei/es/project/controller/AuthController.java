@@ -45,10 +45,11 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                value = "{\"email\": \"test@test.com\", \"password\": \"test\"}"
+                                    value = "{\"email\": \"test@test.com\", \"password\": \"test\"}"
                             )
                     )
             )
             @RequestBody Map<String, String> userpass
-    ) {}
+    ) {
+    }
 }
