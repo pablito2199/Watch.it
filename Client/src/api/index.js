@@ -203,15 +203,34 @@ export default class API {
     }
 
     async updateUser(id, user) {
+        let body = JSON.stringify([
+            {
+                "op": "replace",
+                "path": "/name",
+                "value": user.name
+            },
+            {
+                "op": "replace",
+                "path": "/country",
+                "value": user.country
+            },
+            {
+                "op": "replace",
+                "path": "/picture",
+                "value": user.picture
+            }
+        ])
+
         const requestOptions = {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                op: "",
-                path: "",
-                value: ""
-            })
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": this.#token
+            },
+            body: body
         };
+
+        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
 
         if (response.status === 200) {

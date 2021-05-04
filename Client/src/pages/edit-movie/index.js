@@ -25,10 +25,10 @@ const poster = movie => movie?.resources?.find(res => res?.type === 'POSTER')?.u
 
 export default function Profile() {
     const { id } = useParams()
-    const { movie, updateMovie } = useMovie(id)
+    const { movie, update } = useMovie(id)
 
     const submit = async (event) => {
-        await updateMovie({
+        await update({
             title: movie.title,
             overview: movie.overview,
             tagline: movie.tagline,
@@ -53,7 +53,7 @@ export default function Profile() {
 
         <Link variant='primary'
             className='rounded-full absolute text-white top-4 left-8 flex items-center pl-2 pr-4 py-2 gap-4'
-            to='/'
+            to={`/movies/${id}`}
         >
             <Back className='w-8 h-8' />
             <span>Volver</span>
