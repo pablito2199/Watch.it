@@ -89,7 +89,7 @@ public class FilmController {
     //si está logueado
     @PreAuthorize("isAuthenticated()")
     ResponseEntity<Film> get(
-            @Parameter(name = "Film id", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String id
     ) {
         //recuperamos la película indicada
@@ -289,7 +289,7 @@ public class FilmController {
     //si está logueado
     @PreAuthorize("isAuthenticated()")
     ResponseEntity<Assessment> getAssessment(
-            @Parameter(name = "Assessment id", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String assessment
     ) {
         //recuperamos la valoración obtenida
@@ -352,7 +352,7 @@ public class FilmController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
-            @Parameter(name = "Film of the assessment", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String film
     ) {
         //si la película no existe
@@ -588,7 +588,7 @@ public class FilmController {
     //solo se permite a los administradores
     @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> patch(
-            @Parameter(name = "Film to be modified", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String id,
             @Parameter(name = "Updates to be applied to the film", required = true)
             @RequestBody List<Map<String, Object>> updates
@@ -675,7 +675,7 @@ public class FilmController {
     //solo el propio usuario
     @PreAuthorize("@assessmentService.get(#id).get().user.email == principal")
     ResponseEntity<Assessment> patchAssessment(
-            @Parameter(name = "Assessment to be modified", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String id,
             @Parameter(name = "Updates to be applied to the assessment", required = true)
             @RequestBody List<Map<String, Object>> updates
@@ -761,7 +761,7 @@ public class FilmController {
     //solo se permite a los administradores
     @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<Film> delete(
-            @Parameter(name = "Film to be deleted", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String id
     ) {
         //si la película no existe en la base de datos
@@ -823,7 +823,10 @@ public class FilmController {
     //recoge la variable del id, pues necesita buscar el id para eliminar la valoración
     //solo pueden admin y el propio usuario
     @PreAuthorize("hasRole('ADMIN') or @assessmentService.get(#id).get().user.email == principal")
-    ResponseEntity<Assessment> deleteAssessment(@PathVariable("id") String id) {
+    ResponseEntity<Assessment> deleteAssessment(
+            @Parameter(name="id", required = true)
+            @PathVariable("id") String id
+    ) {
         //si la valoración no existe en la base de datos
         if (!assessments.get(id).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda

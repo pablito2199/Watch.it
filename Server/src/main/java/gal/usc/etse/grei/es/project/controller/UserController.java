@@ -92,7 +92,7 @@ public class UserController {
     //solo puede admin, el propio usuario y sus amigos
     @PreAuthorize("hasRole('ADMIN') or #email == principal or @friendshipService.areFriends(principal, #email)")
     public ResponseEntity<User> get(
-            @Parameter(name = "User email", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String email
     ) {
         //recuperamos el usuario obtenido
@@ -278,7 +278,7 @@ public class UserController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
-            @Parameter(name = "User of the assessment", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String user
     ) {
         //si el usuario no existe
@@ -366,9 +366,9 @@ public class UserController {
     //solo pueden los usuarios implicados en la relación
     @PreAuthorize("#user == principal and (@friendshipService.get(#friendship).get().user == principal or @friendshipService.get(#friendship).get().friend == principal)")
     ResponseEntity<Friendship> get(
-            @Parameter(name = "User who searches for the friend", required = true)
+            @Parameter(name = "user", required = true)
             @PathVariable("user") String user,
-            @Parameter(name = "Friendship to find", required = true)
+            @Parameter(name = "friendship", required = true)
             @PathVariable("friendship") String friendship
     ) {
         //si la amistad no se encuentra en la base de datos
@@ -468,7 +468,7 @@ public class UserController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
-            @Parameter(name = "User of the search", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String user
     ) {
         //si el usuario no existe
@@ -627,7 +627,7 @@ public class UserController {
     //solo puede el propio usuario
     @PreAuthorize("#user == principal")
     ResponseEntity<Friendship> insert(
-            @Parameter(name = "User who adds a friend", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String user,
             @Parameter(name = "Friend to be added", required = true)
             @RequestBody User friend
@@ -718,7 +718,7 @@ public class UserController {
     //solo puede el propio usuario
     @PreAuthorize("#email == principal")
     ResponseEntity<User> patch(
-            @Parameter(name = "User to be modified", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String email,
             @Parameter(name = "Updates to be applied to the user", required = true)
             @RequestBody List<Map<String, Object>> updates
@@ -811,9 +811,9 @@ public class UserController {
     //si amigo es el propio usuario
     @PreAuthorize("#user == principal")
     ResponseEntity<Friendship> put(
-            @Parameter(name = "User who accepts the friendship", required = true)
+            @Parameter(name = "user", required = true)
             @PathVariable("user") String user,
-            @Parameter(name = "Friendship to be accepted", required = true)
+            @Parameter(name = "friendship", required = true)
             @PathVariable("friendship") String friendship
     ) {
         //si el usuario no está presente en la base de datos
@@ -901,7 +901,7 @@ public class UserController {
     //solo puede el propio usuario
     @PreAuthorize("#email == principal")
     ResponseEntity<User> delete(
-            @Parameter(name = "User to be deleted", required = true)
+            @Parameter(name = "id", required = true)
             @PathVariable("id") String email
     ) {
         //si el usuario no existe
@@ -978,9 +978,9 @@ public class UserController {
     //solo puede el propio usuario
     @PreAuthorize("#user == principal")
     ResponseEntity<Friendship> delete(
-            @Parameter(name = "User who deletes the friend", required = true)
+            @Parameter(name = "user", required = true)
             @PathVariable("user") String user,
-            @Parameter(name = "Friend to be deleted", required = true)
+            @Parameter(name = "friendship", required = true)
             @PathVariable("friendship") String friendship
     ) {
         //si el usuario no se encuentra en la base de datos
