@@ -33,13 +33,13 @@ export function useMovie(id = '') {
 
     return {
         movie: data,
-        updateMovie: update
+        update
     }
 }
 
 export function useUser(id = null) {
     const [data, setData] = useState([])
-    const userId = id === null ? localStorage.getItem('user') : id
+    const userId = id === null ? id = localStorage.getItem('user') : id
 
     useEffect(() => {
         API.instance()

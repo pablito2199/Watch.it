@@ -16,8 +16,9 @@ export default class API {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: pass })
         };
-        console.log(requestOptions)
+        
         const response = await fetch(`http://localhost:8080/login`, requestOptions);
+
         if (response.status === 200) {
             localStorage.setItem('user', email)
             localStorage.setItem('token', response.headers.get("Authentication"))
@@ -230,7 +231,6 @@ export default class API {
             body: body
         };
 
-        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
 
         if (response.status === 200) {
@@ -258,7 +258,6 @@ export default class API {
             body: body
         };
 
-        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
 
         if (response.status === 200) {
