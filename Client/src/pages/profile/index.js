@@ -37,14 +37,17 @@ function Header({ user }) {
     </header>
 }
 function Info({ user }) {
-    return <div className='flex'>
-        <div className='flex'>
-            <Calendar />
+    return <div className='flex justify-between mt-4'>
+        <div className='ml-60'>
+            <Calendar className='h-12 w-12' />
             <span className={`self-centerblock text-2xl font-semibold text-black w-full px-8 py-4 text-right`}>
+                {
+                    user.birthday && <>{user.birthday.day}/{user.birthday.month}/{user.birthday.year}</>
+                }
             </span>
         </div>
-        <div className='flex'>
-            <Location />
+        <div className=''>
+            <Location className='h-12 w-12' />
             <span className={`self-centerblock text-2xl font-semibold text-black w-full px-8 py-4 text-right`}>
                 {user.country}
             </span>
