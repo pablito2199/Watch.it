@@ -30,10 +30,11 @@ export default function Profile() {
 
 function Header({ user }) {
     return <header className='mt-96 relative flex pb-8 mb-8'>
-        <img style={{ aspectRatio: '2/3' }}
+        <img
             src={user.picture}
             alt={user.name}
-            className='absolute w-64 rounded-full shadow-xl z-20' />
+            className='absolute w-64 rounded-full shadow-xl z-20'
+        />
         <hgroup className='ml-12 flex-1 mt-28'>
             <h1 className={`bg-black bg-opacity-50 backdrop-filter backdrop-blur 
                                       text-right text-white text-6xl font-bold

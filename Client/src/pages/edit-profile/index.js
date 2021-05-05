@@ -1,4 +1,5 @@
 import { ArrowCircleLeftOutline as Back, FilmSolid as RatingIcon, CalendarOutline as Calendar, LocationMarkerOutline as Location, SaveOutline as Save } from '@graywolfai/react-heroicons'
+import { useRef, useState } from 'react'
 import { Input, Link, Shell } from '../../components'
 
 import { useUser, useComments } from '../../hooks'
@@ -48,11 +49,20 @@ export default function EditProfile() {
 }
 
 function Header({ user }) {
+    const [visible, setVisible] = useState(false)
+
     return <header className='mt-96 relative flex pb-8 mb-8'>
-        <img style={{ aspectRatio: '2/3' }}
-            src={user.picture}
+        <img src={user.picture}
             alt={user.name}
-            className='absolute w-64 rounded-full shadow-xl z-20' />
+            className='absolute w-64 rounded-full shadow-xl z-10 cursor-pointer'
+            onClick={() => { setVisible(!visible) }}
+            style={{ aspectRatio: '1/1' }} 
+        />
+        <Input
+            labelClassName={`w-64 absolute self-center ${visible ? '' : 'hidden'} z-20`}
+            defaultValue={user.picture}
+            onChange={(event) => user.picture = event.target.value}
+        />
         <hgroup className='ml-12 flex-1 mt-28'>
             <Input
                 className={`bg-black bg-opacity-50 backdrop-filter backdrop-blur 

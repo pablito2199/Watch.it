@@ -191,7 +191,7 @@ function PlatformLink({ type = '', url = '', ...props }) {
                     className='rounded-lg w-16 h-16'
                 />
                 <span className='font-bold'>
-                    Reproducir en
+                    Reproducir en Disney Plus
                 </span>
             </a>
         case 'GOOGLE_PLAY':

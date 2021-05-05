@@ -16,7 +16,7 @@ export default class API {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, password: pass })
         };
-        
+
         const response = await fetch(`http://localhost:8080/login`, requestOptions);
 
         if (response.status === 200) {
@@ -72,10 +72,7 @@ export default class API {
         const response = await fetch(`http://localhost:8080/films${parameters}`, requestOptions);
         if (response.status === 200) {
             return await response.json()
-        } else if (response.status === 404) {
-
         }
-        return await response.json()
     }
 
     async findMovie(id) {
@@ -89,10 +86,7 @@ export default class API {
         const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
         if (response.status === 200) {
             return await response.json()
-        } else if (response.status === 404) {
-
         }
-        return await response.json()
     }
 
     async findUser(id) {
@@ -106,10 +100,7 @@ export default class API {
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
         if (response.status === 200) {
             return await response.json()
-        } else if (response.status === 404) {
-
         }
-        return await response.json()
     }
 
     async findComments(
@@ -141,10 +132,7 @@ export default class API {
         const response = await fetch(`http://localhost:8080/${filter}assessments${parameters}`, requestOptions);
         if (response.status === 200) {
             return await response.json()
-        } else if (response.status === 404) {
-
         }
-        return await response.json()
     }
 
     async createComment(assessment) {
@@ -169,9 +157,7 @@ export default class API {
 
         if (response.status === 200) {
             return true
-        } else if (response.status === 403) {
-            return false
-        } else if (response.status === 409) {
+        } else {
             return false
         }
     }
@@ -196,9 +182,7 @@ export default class API {
 
         if (response.status === 200) {
             return true
-        } else if (response.status === 403) {
-            return false
-        } else if (response.status === 409) {
+        } else {
             return false
         }
     }
@@ -235,19 +219,34 @@ export default class API {
 
         if (response.status === 200) {
             return true
-        } else if (response.status === 403) {
-            return false
-        } else if (response.status === 409) {
+        } else {
             return false
         }
     }
 
     async updateMovie(id, film) {
-        let body = JSON.stringify([{
-            "op": "replace",
-            "path": "/title",
-            "value": film.title
-        }])
+        let body = JSON.stringify([
+            {
+                "op": "replace",
+                "path": "/title",
+                "value": film.title
+            },
+            {
+                "op": "replace",
+                "path": "/overview",
+                "value": film.overview
+            },
+            {
+                "op": "replace",
+                "path": "/tagline",
+                "value": film.tagline
+            },
+            {
+                "op": "replace",
+                "path": "/resources",
+                "value": film.resources
+            }
+        ])
 
         const requestOptions = {
             method: 'PATCH',
@@ -262,9 +261,7 @@ export default class API {
 
         if (response.status === 200) {
             return true
-        } else if (response.status === 403) {
-            return false
-        } else if (response.status === 409) {
+        } else {
             return false
         }
     }

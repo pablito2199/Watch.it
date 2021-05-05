@@ -11,11 +11,11 @@ export function Assessments({ comments, createComment, film }) {
         {
             comments.content != null
             &&
-            <div className='flex'>
+            <div className='flex relative'>
                 <div ref={scroll} className={`flex gap-8 overflow-hidden`}>
                     <ObtainComments comments={comments} />
                 </div>
-                <div className='h-96 cursor-pointer absolute right-0 w-16 bg-white opacity-80'></div>
+                <div className='h-96 cursor-pointer absolute right-0 w-16 bg-white opacity-70'></div>
                 <button
                     className='h-96 absolute right-0 w-16'
                     onClick={() => {
@@ -29,7 +29,7 @@ export function Assessments({ comments, createComment, film }) {
                     width > 0
                     &&
                     <>
-                        <div className='h-96 cursor-pointer absolute w-16 bg-white opacity-80'></div>
+                        <div className='h-96 cursor-pointer absolute w-16 bg-white opacity-70'></div>
                         <button
                             className='h-96 cursor-pointer absolute w-16'
                             onClick={() => {

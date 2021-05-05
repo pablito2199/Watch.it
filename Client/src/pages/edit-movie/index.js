@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { ArrowCircleLeftOutline as Back, SaveOutline as Save } from '@graywolfai/react-heroicons'
+import { ArrowCircleLeftOutline as Back, DocumentAddOutline as AddResource, SaveOutline as Save } from '@graywolfai/react-heroicons'
 import ReactPlayer from 'react-player'
 
 import { Shell, Link, Separator, Input } from '../../components'
@@ -32,16 +32,7 @@ export default function Profile() {
             title: movie.title,
             overview: movie.overview,
             tagline: movie.tagline,
-            genres: movie.genres,
-            releaseDate: movie.releaseDate,
-            keywords: movie.keywords,
-            producers: movie.producers,
-            crew: movie.crew,
-            resources: movie.resources,
-            budget: movie.budget,
-            status: movie.status,
-            runtime: movie.runtime,
-            revenue: movie.revenue
+            resources: movie.resources
         })
     }
 
@@ -112,7 +103,7 @@ function Info({ movie }) {
 }
 function View({ movie }) {
     return <div className='flex gap-4 mt-8'>
-        <div className='w-80 z-10'>
+        <div className='w-96 z-10'>
             <Links movie={movie} />
         </div>
         <div style={{
@@ -156,19 +147,69 @@ function CrewMember({ movie, job, label }) {
     else return null
 }
 function Links({ movie }) {
+    const [selection, setSelection] = useState('');
+    const [url, setUrl] = useState('');
+    const ref = useRef()
     const resources = movie?.resources?.filter(r => !['POSTER', 'BACKDROP', 'TRAILER'].includes(r.type))
     let links
+
+    const addResource = async (event) => {
+        if (selection !== '' && url !== '') {
+            const newResource = {
+                url: url,
+                type: selection
+            }
+            movie.resources.push(newResource)
+            resources.push(newResource)
+            const children = [];
+            children.push(<PlatformLink key={newResource.type} type={newResource.type} url={newResource.url} />);
+            console.log(ref.current)
+            /*const children = [];
+            children.push(<PlatformLink key={newResource.type} type={newResource.type} url={newResource.url} />);
+            console.log(children)
+
+            ref.current.appendChild(children)*/
+        }
+    }
 
     if (resources?.length === 0) {
         links = <span className='block p-8 text-center bg-gray-300 font-bold'>
             No se han encontrado enlaces!
         </span>
     } else {
-        links = <ul className='space-y-4'>
-            {
-                resources?.map(r => <PlatformLink key={r.type} type={r.type} url={r.url} />)
-            }
-        </ul>
+        links = <div>
+            <div className='flex'>
+                <select
+                    className={`rounded font-bold text-xl bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-2 shadow text-white placeholder-white cursor-pointer`}
+                    onChange={(event) => setSelection(event.target.value)}
+                >
+                    <option disabled selected>Fuente</option>
+                    <option className='text-black'>Disney Plus</option>
+                    <option className='text-black'>Google Play</option>
+                    <option className='text-black'>HBO</option>
+                    <option className='text-black'>iTunes</option>
+                    <option className='text-black'>Netflix</option>
+                    <option className='text-black'>Prime Video</option>
+                    <option className='text-black'>YouTube</option>
+                </select>
+                <Input
+                    className={`font-bold text-xl bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow text-white ml-2 placeholder-white`}
+                    placeholder='URL'
+                    onChange={(event) => setUrl(event.target.value)}
+                />
+                <AddResource
+                    className='w-12 h-12 cursor-pointer ml-3'
+                    onClick={addResource}
+                />
+            </div>
+            <div className='mt-6 ml-4'>
+                <ul ref={ref} className='space-y-4'>
+                    {
+                        resources?.map(r => <PlatformLink key={r.type} type={r.type} url={r.url} />)
+                    }
+                </ul>
+            </div>
+        </div>
     }
 
 
@@ -201,7 +242,7 @@ function PlatformLink({ type = '', url = '', ...props }) {
                     className='rounded-lg w-16 h-16'
                 />
                 <span className='font-bold'>
-                    Reproducir en
+                    Reproducir en Disney Plus
                 </span>
             </a>
         case 'GOOGLE_PLAY':
