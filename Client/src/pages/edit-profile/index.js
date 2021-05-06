@@ -6,6 +6,7 @@ import { useUser, useComments } from '../../hooks'
 
 export default function EditProfile() {
     const { user, create, update } = useUser()
+    const [picture, setPicture] = useState('')
 
     const submit = async (event) => {
         await update({
@@ -19,7 +20,7 @@ export default function EditProfile() {
         <div className='mx-auto w-full max-w-screen-2xl p-8'>
             <img
                 style={{ height: '36rem' }}
-                src={user.picture}
+                src={picture !== '' ? picture : user.picture}
                 alt={user.name}
                 className='absolute top-2 left-0 right-0 w-full object-cover filter blur transform scale-105'
             />
@@ -42,13 +43,13 @@ export default function EditProfile() {
                 />
             </Link>
 
-            <Header user={user} />
+            <Header user={user} setPicture={setPicture} />
             <PageInfo />
         </div>
     </Shell>
 }
 
-function Header({ user }) {
+function Header({ user, setPicture }) {
     const [visible, setVisible] = useState(false)
 
     return <header className='mt-96 relative flex pb-8 mb-8'>
@@ -61,7 +62,10 @@ function Header({ user }) {
         <Input
             labelClassName={`w-64 absolute self-center ${visible ? '' : 'hidden'} z-20`}
             defaultValue={user.picture}
-            onChange={(event) => user.picture = event.target.value}
+            onChange={(event) => { 
+                user.picture = event.target.value
+                setPicture(event.target.value)
+            }}
         />
         <hgroup className='ml-12 flex-1 mt-28'>
             <Input

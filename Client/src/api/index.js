@@ -24,7 +24,7 @@ export default class API {
             localStorage.setItem('token', response.headers.get("Authentication"))
             this.#token = response.headers.get("Authentication")
             return true
-        } else if (response.status === 401) {
+        } else {
             return false
         }
     }
