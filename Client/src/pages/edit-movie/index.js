@@ -108,6 +108,9 @@ function Info({ movie }) {
     </div>
 }
 function View({ movie }) {
+    let trailer = movie?.resources?.find(r => r.type === 'TRAILER')
+    const [url, setUrl] = useState('');
+
     return <div className='flex gap-4 mt-8'>
         <div className='w-96 z-10'>
             <Links movie={movie} />
@@ -116,6 +119,15 @@ function View({ movie }) {
             aspectRatio: '16/9'
         }}
             className='flex-1 ml-8 mt-8 bg-pattern-2 flex items-center justify-center z-20'>
+            <Input
+                className={`relative bottom-56 font-bold text-xl bg-gradient-to-br from-green-500 via-blue-500 to-purple-500 p-4 shadow text-white ml-2 placeholder-white`}
+                placeholder='URL'
+                defaultValue={trailer !== undefined ? trailer.url : ''}
+                onChange={(event) => {
+                    movie?.resources?.find(r => { r.type === 'TRAILER' ? r.url = event.target.value : r.url = r.url })
+                    setUrl(event.target.value)
+                }}
+            />
             <Trailer movie={movie} />
         </div>
     </div>
@@ -151,10 +163,10 @@ function CrewMember({ movie, job, label }) {
     else return null
 }
 function Links({ movie }) {
-    const [selection, setSelection] = useState('');
-    const [url, setUrl] = useState('');
-    const ref = useRef()
-    const resources = movie?.resources?.filter(r => !['POSTER', 'BACKDROP', 'TRAILER'].includes(r.type))
+    const [selection, setSelection] = useState('')
+    const [url, setUrl] = useState('')
+    const [newResources, setNewResources] = useState([])
+    let resources = movie?.resources?.filter(r => !['POSTER', 'BACKDROP', 'TRAILER'].includes(r.type))
     let links
 
     const addResource = async (event) => {
@@ -164,22 +176,39 @@ function Links({ movie }) {
                 type: selection
             }
             movie.resources.push(newResource)
-            resources.push(newResource)
-            const children = [];
-            children.push(<PlatformLink key={newResource.type} type={newResource.type} url={newResource.url} />);
-            console.log(ref.current)
-            /*const children = [];
-            children.push(<PlatformLink key={newResource.type} type={newResource.type} url={newResource.url} />);
-            console.log(children)
-
-            ref.current.appendChild(children)*/
+            setNewResources(movie.resources)
+            resources = newResources
         }
     }
 
     if (resources?.length === 0) {
-        links = <span className='block p-8 text-center bg-gray-300 font-bold'>
-            No se han encontrado enlaces!
-        </span>
+        links = <div>
+            <div className='flex'>
+                <select
+                    className={`rounded font-bold text-xl bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-2 shadow text-white placeholder-white cursor-pointer`}
+                    onChange={(event) => setSelection(event.target.value)}
+                >
+                    <option disabled selected>Fuente</option>
+                    <option className='text-black'>DISNEY_PLUS</option>
+                    <option className='text-black'>GOOGLE_PLAY</option>
+                    <option className='text-black'>HBO</option>
+                    <option className='text-black'>ITUNES</option>
+                    <option className='text-black'>NETFLIX</option>
+                    <option className='text-black'>PRIME_VIDEO</option>
+                    <option className='text-black'>YOUTUBE</option>
+                </select>
+                <Input
+                    className={`font-bold text-xl bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow text-white ml-2 placeholder-white`}
+                    placeholder='URL'
+                    onChange={(event) => setUrl(event.target.value)
+                    }
+                />
+                <AddResource
+                    className='w-12 h-12 cursor-pointer ml-3'
+                    onClick={addResource}
+                />
+            </div>
+        </div>
     } else {
         links = <div>
             <div className='flex'>
@@ -188,18 +217,19 @@ function Links({ movie }) {
                     onChange={(event) => setSelection(event.target.value)}
                 >
                     <option disabled selected>Fuente</option>
-                    <option className='text-black'>Disney Plus</option>
-                    <option className='text-black'>Google Play</option>
+                    <option className='text-black'>DISNEY_PLUS</option>
+                    <option className='text-black'>GOOGLE_PLAY</option>
                     <option className='text-black'>HBO</option>
-                    <option className='text-black'>iTunes</option>
-                    <option className='text-black'>Netflix</option>
-                    <option className='text-black'>Prime Video</option>
-                    <option className='text-black'>YouTube</option>
+                    <option className='text-black'>ITUNES</option>
+                    <option className='text-black'>NETFLIX</option>
+                    <option className='text-black'>PRIME_VIDEO</option>
+                    <option className='text-black'>YOUTUBE</option>
                 </select>
                 <Input
                     className={`font-bold text-xl bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow text-white ml-2 placeholder-white`}
                     placeholder='URL'
-                    onChange={(event) => setUrl(event.target.value)}
+                    onChange={(event) => setUrl(event.target.value)
+                    }
                 />
                 <AddResource
                     className='w-12 h-12 cursor-pointer ml-3'
@@ -207,7 +237,7 @@ function Links({ movie }) {
                 />
             </div>
             <div className='mt-6 ml-4'>
-                <ul ref={ref} className='space-y-4'>
+                <ul className='space-y-4'>
                     {
                         resources?.map(r => <PlatformLink key={r.type} type={r.type} url={r.url} />)
                     }

@@ -153,7 +153,7 @@ export default class API {
         }
 
         const response = await fetch(`http://localhost:8080/${filter}assessments${parameters}`, requestOptions);
-        
+
         if (response.status === 200) {
             return await response.json()
         }
@@ -248,6 +248,7 @@ export default class API {
             body: JSON.stringify(diff)
         };
 
+        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
 
         if (response.status === 200) {

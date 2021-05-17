@@ -546,7 +546,7 @@ public class FilmController {
                 .body(result);
     }
 
-    //método PUT para modificar una película
+    //método PATCH para modificar una película
     //link al servicio en films/{id}, consumes, pues necesita los datos del body
     @PatchMapping(
             path = "{id}",
