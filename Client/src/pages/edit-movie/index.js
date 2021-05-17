@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Redirect, useParams } from 'react-router-dom'
 import { ArrowCircleLeftOutline as Back, DocumentAddOutline as AddResource, SaveOutline as Save } from '@graywolfai/react-heroicons'
 import ReactPlayer from 'react-player'
 
-import { Shell, Link, Separator, Input } from '../../components'
+import { Shell, Link, Separator, Input, Button } from '../../components'
 
 import { useMovie } from '../../hooks'
 
@@ -26,12 +26,18 @@ const poster = movie => movie?.resources?.find(res => res?.type === 'POSTER')?.u
 export default function Profile() {
     const { id } = useParams()
     const { movie, update } = useMovie(id)
+    const [updateOk, setUpdateOk] = useState(false)
 
     const submit = async (event) => {
-        await update({
-            overview: movie.overview,
-            resources: movie.resources
+        const result = await update({
+            movie
         })
+
+        setUpdateOk(result)
+    }
+
+    if (updateOk) {
+        return <Redirect to={`/movies/${movie.id}`} />
     }
 
     return <Shell>
@@ -48,15 +54,15 @@ export default function Profile() {
             <span>Volver</span>
         </Link>
 
-        <Link variant='primary'
-            className='rounded-full absolute text-white top-4 right-8 flex items-center px-2 py-2 gap-4'
-            to={`/movies/${id}`}
+        <Button
+            variant='primary'
+            className='rounded-full text-white absolute top-8 right-8 flex items-center px-2 py-2 gap-4'
+            onClick={submit}
         >
             <Save
                 className='w-8 h-8'
-                onClick={submit}
             />
-        </Link>
+        </Button>
 
         <div className='mx-auto w-full max-w-screen-2xl p-8'>
             <Header movie={movie} />

@@ -27,9 +27,9 @@ export function useMovie(id = '') {
             })
     }, [movieId])
 
-    const update = movie => {API.instance()
+    const update = movie => API.instance()
         .updateMovie(id, movie)
-        .then(movie => setData(movie))} 
+        .then(updated =>  {return updated}) 
 
     return {
         movie: data,

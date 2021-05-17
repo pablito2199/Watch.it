@@ -229,19 +229,8 @@ export default class API {
         }
     }
 
-    async updateMovie(id, film) {
-        let body = JSON.stringify([
-            {
-                "op": "replace",
-                "path": "/overview",
-                "value": film.overview
-            },
-            {
-                "op": "replace",
-                "path": "/resources",
-                "value": film.resources
-            }
-        ])
+    async updateMovie(id, movie) {
+        var diff = jsonpatch.compare(await this.findMovie(id), movie.movie);
 
         const requestOptions = {
             method: 'PATCH',
@@ -249,7 +238,7 @@ export default class API {
                 'Content-Type': 'application/json',
                 "Authorization": this.#token
             },
-            body: body
+            body: JSON.stringify(diff)
         };
 
         const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);

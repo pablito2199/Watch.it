@@ -15,7 +15,6 @@ export default function EditProfile() {
             user
         })
 
-        console.log(result)
         setUpdateOk(result)
     }
 
