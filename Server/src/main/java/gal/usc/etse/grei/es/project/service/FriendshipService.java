@@ -99,7 +99,7 @@ public class FriendshipService {
     //inserta la amistad entre usuarios
     public Friendship insert(String user, String friend) {
         //actualizamos los campos de usuario que crea la amistad y su amigo
-        Friendship friendship = new Friendship().setUser(user).setFriend(friend);
+        Friendship friendship = new Friendship().setUser(user).setFriend(friend).setConfirmed(false);
         //devolvemos el usuario
         return friendships.insert(friendship);
     }

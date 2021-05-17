@@ -86,7 +86,9 @@ export default class API {
                 "Authorization": this.#token
             }
         };
+
         const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
+
         if (response.status === 200) {
             return await response.json()
         }
@@ -100,7 +102,9 @@ export default class API {
                 "Authorization": this.#token
             }
         };
+
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
+
         if (response.status === 200) {
             return await response.json()
         }
@@ -116,7 +120,7 @@ export default class API {
         };
 
         const response = await fetch(`http://localhost:8080/users/${userId}/friendships`, requestOptions);
-        console.log(response)
+        
         if (response.status === 200) {
             return await response.json()
         }
@@ -149,6 +153,7 @@ export default class API {
         }
 
         const response = await fetch(`http://localhost:8080/${filter}assessments${parameters}`, requestOptions);
+        
         if (response.status === 200) {
             return await response.json()
         }
@@ -172,6 +177,7 @@ export default class API {
                 comment: assessment.comment
             })
         };
+
         const response = await fetch(`http://localhost:8080/films/assessments`, requestOptions);
 
         if (response.status === 200) {
@@ -199,6 +205,7 @@ export default class API {
                 roles: ["ROLE_USER"]
             })
         };
+
         const response = await fetch(`http://localhost:8080/users`, requestOptions);
 
         if (response.status === 200) {
