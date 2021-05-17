@@ -39,7 +39,7 @@ export function Button({
     return <button
         disabled = { disabled }
         type = {type || 'button'}
-        className = { `font-semibold relative p-4 text-white rounded transition flex justify-center items-center
+        className = { `font-semibold p-4 text-white rounded transition flex justify-center items-center
                        focus:outline-none focus:ring focus:ring-offset-2 space-x-2
                        ${styles}
                        ${className}

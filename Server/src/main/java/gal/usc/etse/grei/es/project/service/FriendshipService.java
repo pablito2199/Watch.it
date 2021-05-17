@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -70,35 +71,11 @@ public class FriendshipService {
     }
 
     //devuelve la lista de amigos
-    public Optional<Page<String>> getFriends(int page, int size, String user) {
-        Pageable request = PageRequest.of(page, size);
-        Criteria criteria = Criteria.where("_id").exists(true);
-        //indicamos que el usuario o friend debe ser user
-        criteria.and("user").is(user);
-        Query query = Query.query(criteria);
-        List<Friendship> result = mongo.find(query, Friendship.class);
-        Criteria criteria1 = Criteria.where("_id").exists(true);
-        criteria1.and("friend").is(user);
-        query = Query.query(criteria1);
-        //añadimos a continuación en los que se encuentre como friend
-        result.addAll(mongo.find(query, Friendship.class));
-        List<String> friends = new ArrayList<>();
-        //añadimos todos los amigos obtenidos
-        for (Friendship f : result) {
-            if (f.getConfirmed() != null) {
-                if (user.equals(f.getUser())) {
-                    friends.add(f.getFriend());
-                } else {
-                    friends.add(f.getUser());
-                }
-            }
-        }
-
-        if (result.isEmpty())
-            return Optional.empty();
-        else
-            return Optional.of(PageableExecutionUtils.getPage(friends, request,
-                    () -> mongo.count(Query.query(criteria), String.class)));
+    public Optional<Page<Friendship>> getFriends(int page, int size, Sort sort, String user) {
+        //Colocamos los criterios de paginación en un objeto Pageable:
+        Pageable request = PageRequest.of(page, size, sort);
+        //devolvemos amigos paginados
+        return friendships.getAllByUserOrFriend(user, user, request);
     }
 
     //modifica la amistad

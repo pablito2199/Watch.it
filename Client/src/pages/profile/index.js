@@ -82,19 +82,21 @@ function ObtainComments({ user }) {
 
     let render = <></>
 
-    render = comments.content.map((comment) =>
-        <div key={comment.id} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
-            <div className='ml-8 mt-4 flex justify-between'>
-                <span className='font-bold'>{comment.film.title}</span>
-                <div className='text-right mr-10'>
-                    {
-                        getRating(comment.rating)
-                    }
+    if (comments != null) {
+        render = comments.content.map((comment) =>
+            <div key={comment.id} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
+                <div className='ml-8 mt-4 flex justify-between'>
+                    <span className='font-bold'>{comment.film.title}</span>
+                    <div className='text-right mr-10'>
+                        {
+                            getRating(comment.rating)
+                        }
+                    </div>
                 </div>
+                <p className='p-10 md:overflow-hidden'>{comment.comment}</p>
             </div>
-            <p className='p-10 md:overflow-hidden'>{comment.comment}</p>
-        </div>
-    );
+        );
+    }
 
     return render
 }

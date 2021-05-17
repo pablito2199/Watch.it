@@ -115,7 +115,7 @@ function CreateComment({ createComment, film }) {
                 rating: rating
             })
             setRating(0)
-                textField.current.value = ''
+            textField.current.value = ''
             setComment('')
         }
     }
@@ -124,7 +124,7 @@ function CreateComment({ createComment, film }) {
         <div className='flex flex-col md:w-64'>
             <p className='font-bold'>Y a ti, ¿qué te ha parecido?</p>
             <Ratings ratings={rating} setRating={setRating} />
-            <Button className='mt-32' type='submit' variant='primary' onClick={submit}>Publicar</Button>
+            <Button className='mt-32 relative' type='submit' variant='primary' onClick={submit}>Publicar</Button>
         </div>
         <textarea
             name='search'

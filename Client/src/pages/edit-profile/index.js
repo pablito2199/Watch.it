@@ -1,19 +1,26 @@
 import { ArrowCircleLeftOutline as Back, FilmSolid as RatingIcon, CalendarOutline as Calendar, LocationMarkerOutline as Location, SaveOutline as Save } from '@graywolfai/react-heroicons'
 import { useRef, useState } from 'react'
-import { Input, Link, Shell } from '../../components'
+import { Redirect } from 'react-router'
+import { Button, Input, Link, Shell } from '../../components'
 
 import { useUser, useComments } from '../../hooks'
 
 export default function EditProfile() {
     const { user, create, update } = useUser()
     const [picture, setPicture] = useState('')
+    const [updateOk, setUpdateOk] = useState(false)
 
     const submit = async (event) => {
-        await update({
-            name: user.name,
-            country: user.country,
-            picture: user.picture
+        const result = await update({
+            user
         })
+
+        console.log(result)
+        setUpdateOk(result)
+    }
+
+    if (updateOk) {
+        return <Redirect to='/profile' />
     }
 
     return <Shell>
@@ -33,15 +40,15 @@ export default function EditProfile() {
                 <span>Volver</span>
             </Link>
 
-            <Link variant='primary'
-                className='rounded-full absolute text-white top-4 right-8 flex items-center px-2 py-2 gap-4'
-                to={`/profile`}
+            <Button
+                variant='primary'
+                className='rounded-full text-white absolute top-8 right-8 flex items-center px-2 py-2 gap-4'
+                onClick={submit}
             >
                 <Save
                     className='w-8 h-8'
-                    onClick={submit}
                 />
-            </Link>
+            </Button>
 
             <Header user={user} setPicture={setPicture} />
             <PageInfo />
@@ -57,12 +64,12 @@ function Header({ user, setPicture }) {
             alt={user.name}
             className='absolute w-64 rounded-full shadow-xl z-10 cursor-pointer'
             onClick={() => { setVisible(!visible) }}
-            style={{ aspectRatio: '1/1' }} 
+            style={{ aspectRatio: '1/1' }}
         />
         <Input
             labelClassName={`w-64 absolute self-center ${visible ? '' : 'hidden'} z-20`}
             defaultValue={user.picture}
-            onChange={(event) => { 
+            onChange={(event) => {
                 user.picture = event.target.value
                 setPicture(event.target.value)
             }}

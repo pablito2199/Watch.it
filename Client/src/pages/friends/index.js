@@ -1,7 +1,8 @@
 import { CalendarOutline as Calendar, LocationMarkerOutline as Location } from '@graywolfai/react-heroicons'
+import { useState } from 'react'
 import { Shell, Separator } from '../../components'
 
-import { useUser } from '../../hooks'
+import { useUser, useFriends } from '../../hooks'
 
 export default function Profile() {
     const { user, createUser, updateUser } = useUser()
@@ -23,7 +24,7 @@ export default function Profile() {
 
 function Header({ user }) {
     return <header className='mt-96 relative flex pb-8 mb-8'>
-        <img style={{ aspectRatio: '2/3' }}
+        <img style={{ aspectRatio: '1/1' }}
             src={user.picture}
             alt={user.name}
             className='absolute w-64 rounded-full shadow-xl z-20' />
@@ -64,17 +65,76 @@ function PendingFriendships({ user }) {
         <h2 className='mt-16 font-bold text-2xl'>Solicitudes de amistad</h2>
         <Separator />
         <div>
-            
+
         </div>
     </>
 }
 
+function ObtainFriendsNotAccepted({ user }) {
+    const { friends } = useFriends(user.email)
+
+    let render = <></>
+
+    if (friends != null && friends.content != null) {
+        render = friends.content.map((friendship) => {
+            friendship.confirmed === false
+                &&
+                friendship.user === user.email
+                ?
+                <div key={friendship.friend} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
+                    <div className='ml-8 mt-4 flex justify-between'>
+                        <span className='font-bold'>{friendship.friend}</span>
+                    </div>
+                </div>
+                :
+                <div key={friendship.user} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
+                    <div className='ml-8 mt-4 flex justify-between'>
+                        <span className='font-bold'>{friendship.user}</span>
+                    </div>
+                </div>
+        }
+        );
+    }
+
+    return render
+}
+
 function AcceptedFriendships({ user }) {
+
     return <>
         <h2 className='mt-16 font-bold text-2xl'>Amigos</h2>
         <Separator />
         <div>
-            
+            <ObtainFriendsAccepted user={user} />
         </div>
     </>
+}
+
+function ObtainFriendsAccepted({ user }) {
+    const { friends } = useFriends(user.email)
+
+    let render = <></>
+
+    if (friends != null && friends.content != null) {
+        render = friends.content.map((friendship) => {
+            friendship.confirmed === true
+                &&
+                friendship.user === user.email
+                ?
+                <div key={friendship.friend} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
+                    <div className='ml-8 mt-4 flex justify-between'>
+                        <span className='font-bold'>{friendship.friend}</span>
+                    </div>
+                </div>
+                :
+                <div key={friendship.user} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
+                    <div className='ml-8 mt-4 flex justify-between'>
+                        <span className='font-bold'>{friendship.user}</span>
+                    </div>
+                </div>
+        }
+        );
+    }
+
+    return render
 }

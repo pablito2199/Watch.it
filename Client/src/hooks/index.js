@@ -55,12 +55,34 @@ export function useUser(id = null) {
 
     const update = user => API.instance()
             .updateUser(id, user)
-            .then(user => setData(user))
+            .then(updated => {return updated})
 
     return {
         user: data,
         create,
         update
+    }
+}
+
+export function useFriends(id = null) {
+    const [data, setData] = useState([])
+    const userId = id === null ? id = localStorage.getItem('user') : id
+
+    useEffect(() => {
+        API.instance()
+            .findFriendships(userId)
+            .then(friends => {
+                setData(friends)
+            })
+    }, [userId])
+
+    /*const update = user => API.instance()
+            .updateUser(id, user)
+            .then(user => setData(user))*/
+
+    return {
+        friends: data,
+        //update
     }
 }
 

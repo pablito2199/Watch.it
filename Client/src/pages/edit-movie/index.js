@@ -29,9 +29,7 @@ export default function Profile() {
 
     const submit = async (event) => {
         await update({
-            title: movie.title,
             overview: movie.overview,
-            tagline: movie.tagline,
             resources: movie.resources
         })
     }
@@ -76,9 +74,11 @@ function Header({ movie }) {
             alt={`${movie.title} poster`}
             className='w-64 rounded-lg shadow-xl z-20' />
         <hgroup className='flex-1'>
-            <Input className={`bg-black bg-opacity-50 backdrop-filter backdrop-blur 
+            <h1 className={`bg-black bg-opacity-50 backdrop-filter backdrop-blur 
                                           text-right text-white text-6xl font-bold
-                                          p-8 w-full h-full`} defaultValue={movie.title} onChange={(event) => movie.title = (event.target.value)} />
+                                          p-8`}>
+                {movie.title}
+            </h1>
             <Tagline movie={movie} />
         </hgroup>
     </header>
@@ -127,11 +127,9 @@ function Cast({ movie }) {
 }
 function Tagline({ movie }) {
     if (movie.tagline) {
-        return <Input
-            className={`block text-3xl font-semibold text-black italic w-full px-8 py-4 text-right italic mt-2`}
-            defaultValue={movie.tagline}
-            onChange={(event) => movie.tagline = (event.target.value)}
-        />
+        return <q className={`block text-3xl font-semibold text-black italic w-full px-8 py-4 text-right`}>
+            {movie.tagline}
+        </q>
     } else {
         return <span className='block text-3xl font-semibold py-4'>&nbsp;</span>
     }

@@ -34,7 +34,7 @@ export function MovieList({
             }
 
             <div className = 'w-full flex items-center gap-4'>
-                <Button className = 'rounded-full'
+                <Button className = 'rounded-full relative'
                         variant = { paginationVariant }
                         disabled = { !hasPrevious }
                         onClick = { prevPage }>
@@ -43,7 +43,7 @@ export function MovieList({
                 <ul className = 'w-full flex-1 grid grid-cols-7 gap-2 relative items-center justify-center'>
                     { content?.map(movie =>  <Poster movie = { movie } key = { movie.id } className = { itemClassName } />) }
                 </ul>
-                <Button className = 'rounded-full'
+                <Button className = 'rounded-full relative'
                         variant = { paginationVariant }
                         disabled = { !hasNext }
                         onClick = { nextPage }>

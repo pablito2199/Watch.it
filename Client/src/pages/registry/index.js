@@ -34,10 +34,7 @@ export default function Login() {
                         day,
                         month,
                         year
-                    },
-                    country: "Spain",
-                    picture: "https://pbs.twimg.com/profile_images/1324044062890942464/B_osBEcZ_400x400.jpg",
-                    roles: ["ROLE_USER"]
+                    }
                 })
 
                 history.push('/')
@@ -96,7 +93,7 @@ export default function Login() {
                        before = { FingerPrintOutline }
                        variant = 'primary'
                 />
-                <Button className = 'mt-8' type = 'submit' variant = 'secondary'>Registrar</Button>
+                <Button className = 'mt-8 relative' type = 'submit' variant = 'secondary'>Registrar</Button>
             </form>
             <Link to='login' variant = 'plain-secondary'>Iniciar sesión</Link>
         </main>

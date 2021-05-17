@@ -36,7 +36,7 @@ export default function NotFound() {
             <h2 className = 'bg-black text-white p-4 font-bold text-2xl transform -skew-x-12 -rotate-3'>
                 La ruta a la que intentas acceder no existe!
             </h2>
-            <Button className = 'transform -skew-x-12 -rotate-3 mt-4'
+            <Button className = 'transform -skew-x-12 -rotate-3 mt-4 relative'
                     variant = 'plain-primary'
                     onClick = { () => dispatch('end') }>
                 Serás redirigido automáticamente en { timeout }

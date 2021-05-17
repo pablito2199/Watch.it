@@ -398,8 +398,11 @@ public class UserController {
         Link self = linkTo(
                 methodOn(UserController.class).get(result.get().getId())
         ).withSelfRel();
+        //creamos los enlaces correspondientes
+        List<String> sort = new ArrayList<>();
+        sort.add("");
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(0, 0, result.get().getUser())
+                methodOn(UserController.class).getFriends(0, 0, sort, result.get().getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
         Link userLink = linkTo(
                 methodOn(UserController.class).get(user)
@@ -463,11 +466,13 @@ public class UserController {
     })
     //si es el propio usuario
     @PreAuthorize("#user == principal")
-    ResponseEntity<Page<String>> getFriends(
+    ResponseEntity<Page<Friendship>> getFriends(
             @Parameter(name = "Page of the search")
             @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(name = "Size of the search")
             @RequestParam(name = "size", defaultValue = "20") int size,
+            @Parameter(name = "Sort of the search")
+            @RequestParam(name = "sort", defaultValue = "") List<String> sort,
             @Parameter(name = "id", required = true)
             @PathVariable("id") String user
     ) {
@@ -475,33 +480,60 @@ public class UserController {
         if (!users.get(user).isPresent()) {
             //devolvemos código de error 404 al producirse un error de búsqueda
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }//ordenamos por aniversario
+        if (sort.contains("+since")) {
+            sort.add("+since.year");
+            sort.add("+since.month");
+            sort.add("+since.day");
+            sort.remove("+since");
         }
-        Optional<Page<String>> result = friendships.getFriends(page, size, user);
+        if (sort.contains("-since")) {
+            sort.add("-since.year");
+            sort.add("-since.month");
+            sort.add("-since.day");
+            sort.remove("-since");
+        }
+
+        //ordenamos la lista obtenida
+        List<Sort.Order> criteria = sort.stream().map(string -> {
+            if (string.startsWith("+")) {
+                //ordenamos la lista acendentemente
+                return Sort.Order.asc(string.substring(1));
+            } else if (string.startsWith("-")) {
+                //ordenamos la lista descendentemente
+                return Sort.Order.desc(string.substring(1));
+            } else return null;
+        })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        //Intentamos hacer la búsqueda:
+        Optional<Page<Friendship>> result = friendships.getFriends(page, size, Sort.by(criteria), user);
         //si la lista está vacía
         if (!result.isPresent()) {
             //devolvemos código 204 al ir todo bien, pero no encontrar amigos
             throw new ResponseStatusException(HttpStatus.NO_CONTENT, "User do not have any friends");
         }
         //guardamos los resultados obtenidos
-        Page<String> data = result.get();
+        Page<Friendship> data = result.get();
         //paginamos los datos obtenidos
         Pageable metadata = data.getPageable();
 
         //creamos los enlaces correspondientes
         Link self = linkTo(
-                methodOn(UserController.class).getFriends(page, size, user)
+                methodOn(UserController.class).getFriends(page, size, sort, user)
         ).withSelfRel();
         Link first = linkTo(
-                methodOn(UserController.class).getFriends(metadata.first().getPageNumber(), size, user)
+                methodOn(UserController.class).getFriends(metadata.first().getPageNumber(), size, sort, user)
         ).withRel(IanaLinkRelations.FIRST);
         Link next = linkTo(
-                methodOn(UserController.class).getFriends(metadata.next().getPageNumber(), size, user)
+                methodOn(UserController.class).getFriends(metadata.next().getPageNumber(), size, sort, user)
         ).withRel(IanaLinkRelations.NEXT);
         Link previous = linkTo(
-                methodOn(UserController.class).getFriends(metadata.previousOrFirst().getPageNumber(), size, user)
+                methodOn(UserController.class).getFriends(metadata.previousOrFirst().getPageNumber(), size, sort, user)
         ).withRel(IanaLinkRelations.PREVIOUS);
         Link last = linkTo(
-                methodOn(UserController.class).getFriends(data.getTotalPages() - 1, size, user)
+                methodOn(UserController.class).getFriends(data.getTotalPages() - 1, size, sort, user)
         ).withRel(IanaLinkRelations.LAST);
 
         //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
@@ -664,8 +696,11 @@ public class UserController {
         Link self = linkTo(
                 methodOn(UserController.class).get(result.getId())
         ).withSelfRel();
+        //creamos los enlaces correspondientes
+        List<String> sort = new ArrayList<>();
+        sort.add("");
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(0, 0, result.getUser())
+                methodOn(UserController.class).getFriends(0, 0, sort, result.getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
 
         //devolvemos la respuesta de que todo fue bien, con los enlaces en la cabecera, y el cuerpo correspondiente
@@ -843,8 +878,11 @@ public class UserController {
         Link self = linkTo(
                 methodOn(UserController.class).get(result.getId())
         ).withSelfRel();
+        //creamos los enlaces correspondientes
+        List<String> sort = new ArrayList<>();
+        sort.add("");
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(0, 0, result.getUser())
+                methodOn(UserController.class).getFriends(0, 0, sort, result.getUser())
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
         Link userLink = linkTo(
                 methodOn(UserController.class).get(user)
@@ -1008,8 +1046,11 @@ public class UserController {
         friendships.delete(friendship);
 
         //creamos los enlaces correspondientes
+        List<String> sort = new ArrayList<>();
+        sort.add("");
+        //creamos los enlaces correspondientes
         Link all = linkTo(
-                methodOn(UserController.class).getFriends(0, 0, user)
+                methodOn(UserController.class).getFriends(0, 0, sort, user)
         ).withRel(relationProvider.getItemResourceRelFor(Friendship.class));
 
         //devolvemos código de error 204 al ir todo bien

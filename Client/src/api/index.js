@@ -1,3 +1,6 @@
+import * as jsonpatch from 'fast-json-patch/index.mjs';
+import { applyOperation } from 'fast-json-patch/index.mjs';
+
 let __instance = null
 
 export default class API {
@@ -103,6 +106,22 @@ export default class API {
         }
     }
 
+    async findFriendships(userId) {
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": this.#token
+            }
+        };
+
+        const response = await fetch(`http://localhost:8080/users/${userId}/friendships`, requestOptions);
+        console.log(response)
+        if (response.status === 200) {
+            return await response.json()
+        }
+    }
+
     async findComments(
         {
             filter: { movie = '', user = '' } = { movie: '', user: '' },
@@ -170,6 +189,8 @@ export default class API {
                 email: user.email,
                 name: user.name,
                 password: user.password,
+                country: "Undefined",
+                picture: "https://preview.redd.it/nx4jf8ry1fy51.gif?format=png8&s=a5d51e9aa6b4776ca94ebe30c9bb7a5aaaa265a6",
                 birthday: {
                     day: user.birthday.day,
                     month: user.birthday.month,
@@ -188,23 +209,7 @@ export default class API {
     }
 
     async updateUser(id, user) {
-        let body = JSON.stringify([
-            {
-                "op": "replace",
-                "path": "/name",
-                "value": user.name
-            },
-            {
-                "op": "replace",
-                "path": "/country",
-                "value": user.country
-            },
-            {
-                "op": "replace",
-                "path": "/picture",
-                "value": user.picture
-            }
-        ])
+        var diff = jsonpatch.compare(await this.findUser(id), user.user);
 
         const requestOptions = {
             method: 'PATCH',
@@ -212,7 +217,7 @@ export default class API {
                 'Content-Type': 'application/json',
                 "Authorization": this.#token
             },
-            body: body
+            body: JSON.stringify(diff)
         };
 
         const response = await fetch(`http://localhost:8080/users/${id}`, requestOptions);
@@ -228,18 +233,8 @@ export default class API {
         let body = JSON.stringify([
             {
                 "op": "replace",
-                "path": "/title",
-                "value": film.title
-            },
-            {
-                "op": "replace",
                 "path": "/overview",
                 "value": film.overview
-            },
-            {
-                "op": "replace",
-                "path": "/tagline",
-                "value": film.tagline
             },
             {
                 "op": "replace",

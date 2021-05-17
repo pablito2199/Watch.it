@@ -105,7 +105,7 @@ export function Shell({children, className = ''}) {
                 <MovieList className = 'bg-white pt-8' itemClassName = 'hover:translate-y-4' query = { { filter: tryParse(query) } } />
             </div>
             <footer className = {`w-full flex bg-white justify-center p-2 cursor-pointer transition transform hover:-translate-y-2` }>
-                <Button type = 'reset' onClick = { close } className = 'w-full' form = 'searchForm'>
+                <Button type = 'reset' onClick = { close } className = 'w-full relative' form = 'searchForm'>
                     <Close className = 'text-yellow-600 w-8 h-8 pointer-events-none' />
                 </Button>
             </footer>
