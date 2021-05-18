@@ -82,7 +82,7 @@ function ObtainFriendsNotAccepted({ user }) {
             (
                 friendship.user === user.email
                     ?
-                    <div key={friendship.friend} className='w-full ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ maxWidth: '450px' }}>
+                    <div key={friendship.id} className='w-full ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ maxWidth: '450px' }}>
                         <span className='ml-4 mt-4 font-bold'>{friendship.friend}</span>
                         <div className='flex mt-3 mr-3'>
                             <DeclineRequest
@@ -94,7 +94,7 @@ function ObtainFriendsNotAccepted({ user }) {
                         </div>
                     </div>
                     :
-                    <div key={friendship.user} className='ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ maxWidth: '420px' }}>
+                    <div key={friendship.id} className='ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ maxWidth: '420px' }}>
                         <span className='ml-4 mt-4 font-bold'>{friendship.user}</span>
                         <div className='flex mt-3 mr-3'>
                             <DeclineRequest

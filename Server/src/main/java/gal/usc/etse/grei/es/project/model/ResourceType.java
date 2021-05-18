@@ -5,7 +5,7 @@ public enum ResourceType {
     BACKDROP,
     TRAILER,
     NETFLIX,
-    AMAZON_PRIME,
+    PRIME_VIDEO,
     DISNEY_PLUS,
     ITUNES,
     HBO,

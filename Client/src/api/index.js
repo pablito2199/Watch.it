@@ -74,7 +74,14 @@ export default class API {
 
         const response = await fetch(`http://localhost:8080/films${parameters}`, requestOptions);
         if (response.status === 200) {
-            return await response.json()
+            const movieData = await response.json()
+            return {
+                content: movieData.content,
+                pagination: {
+                    hasNext: !movieData.last,
+                    hasPrevious: !movieData.first
+                } 
+            }
         }
     }
 
@@ -248,7 +255,6 @@ export default class API {
             body: JSON.stringify(diff)
         };
 
-        console.log(requestOptions)
         const response = await fetch(`http://localhost:8080/films/${id}`, requestOptions);
 
         if (response.status === 200) {
