@@ -17,7 +17,7 @@ export default function Profile() {
                 className='absolute top-2 left-0 right-0 w-full object-cover filter blur transform scale-105'
             />
             <Header user={user} />
-            <PendingFriendships user={user} friends={friends} deleteFriend={deleteFriend} update={update}/>
+            <PendingFriendships user={user} friends={friends} deleteFriend={deleteFriend} update={update} />
             <AcceptedFriendships user={user} friends={friends} deleteFriend={deleteFriend} />
         </div>
     </Shell>
@@ -66,7 +66,7 @@ function PendingFriendships({ user, friends, deleteFriend, update }) {
         <h2 className='mt-16 font-bold text-2xl'>Solicitudes de amistad</h2>
         <Separator />
         <div className='inline-grid grid-cols-3'>
-            <ObtainFriendsNotAccepted user={user} friends={friends} deleteFriend={deleteFriend} update={update}/>
+            <ObtainFriendsNotAccepted user={user} friends={friends} deleteFriend={deleteFriend} update={update} />
         </div>
     </>
 }

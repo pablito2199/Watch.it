@@ -1,6 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom'
 
-export function Link({className = '', to, children, variant = 'primary', ...props}) {
+export function Link({ className = '', to, children, variant = 'primary', ...props }) {
     let styles = ''
 
     switch (variant) {
@@ -31,11 +31,11 @@ export function Link({className = '', to, children, variant = 'primary', ...prop
         default: throw new Error('variant not allowed')
     }
 
-    return <RouterLink className = { `font-bold text-sm mt-4 no-underline outline-none 
+    return <RouterLink className={`font-bold text-sm mt-4 no-underline outline-none 
                                       ${styles}
                                       ${className}`}
-                 to = {to}
-                 {...props}>
+        to={to}
+        {...props}>
         {children}
     </RouterLink>
 }

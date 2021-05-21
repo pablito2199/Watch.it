@@ -1,17 +1,17 @@
-import React, {useContext, useState} from 'react'
-import {Redirect, Route} from 'react-router-dom'
+import React, { useContext, useState } from 'react'
+import { Redirect, Route } from 'react-router-dom'
 import API from '../../api'
 
 const AuthenticationContext = React.createContext({
     isAuthenticated: false,
     errors: false,
-    login: () => {},
-    logout: () => {},
-    reset: () => {}
+    login: () => { },
+    logout: () => { },
+    reset: () => { }
 })
 const client = API.instance()
 
-function SecuredApp({children}) {
+function SecuredApp({ children }) {
 
     const [isAuthenticated, setIsAuthenticated] = useState(JSON.parse(localStorage.getItem('authenticated') || false))
     const [errors, setErrors] = useState(false)
@@ -34,16 +34,16 @@ function SecuredApp({children}) {
 
     const context = { isAuthenticated, login, logout, errors, reset }
 
-    return <AuthenticationContext.Provider value = { context } >
-        { children }
+    return <AuthenticationContext.Provider value={context} >
+        {children}
     </AuthenticationContext.Provider>
 
 }
 
-function SecuredRoute({children, ...props}) {
+function SecuredRoute({ children, ...props }) {
 
-    const {isAuthenticated} = useContext(AuthenticationContext)
-    return isAuthenticated ? <Route {...props}>{children}</Route> : <Redirect to = '/login' />
+    const { isAuthenticated } = useContext(AuthenticationContext)
+    return isAuthenticated ? <Route {...props}>{children}</Route> : <Redirect to='/login' />
 
 }
 

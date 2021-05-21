@@ -1,13 +1,13 @@
 export function Button({
-                                   type = 'button',
-                                   children = '',
-                                   variant = '',
-                                   className = '',
-                                   iconSize = 'w-4 h-4',
-                                   before: BeforeIcon = null,
-                                   after: AfterIcon = null,
-                                   disabled = false,
-                                   ...props}) {
+    type = 'button',
+    children = '',
+    variant = '',
+    className = '',
+    iconSize = 'w-4 h-4',
+    before: BeforeIcon = null,
+    after: AfterIcon = null,
+    disabled = false,
+    ...props }) {
     let styles
 
     switch (variant) {
@@ -37,17 +37,17 @@ export function Button({
     }
 
     return <button
-        disabled = { disabled }
-        type = {type || 'button'}
-        className = { `font-semibold p-4 text-white rounded transition flex justify-center items-center
+        disabled={disabled}
+        type={type || 'button'}
+        className={`font-semibold p-4 text-white rounded transition flex justify-center items-center
                        focus:outline-none focus:ring focus:ring-offset-2 space-x-2
                        ${styles}
                        ${className}
-                       ${disabled ? 'invisible' : '' }` }
-        { ...props }
+                       ${disabled ? 'invisible' : ''}`}
+        {...props}
     >
-        { BeforeIcon !== null ? <BeforeIcon className = { iconSize } /> : null }
-        <span className = 'pointer-events-none'>{ children }</span>
-        { AfterIcon !== null ? <AfterIcon className = { iconSize } /> : null }
+        {BeforeIcon !== null ? <BeforeIcon className={iconSize} /> : null}
+        <span className='pointer-events-none'>{children}</span>
+        {AfterIcon !== null ? <AfterIcon className={iconSize} /> : null}
     </button>
 }

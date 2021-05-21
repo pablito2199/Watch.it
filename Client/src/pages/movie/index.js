@@ -79,8 +79,8 @@ function Info({ movie }) {
             <h2 className='font-bold text-2xl text-white bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 p-4 shadow'>
                 Argumento
             </h2>
-            <p className = 'pt-8 p-4'>
-                { movie.overview }
+            <p className='pt-8 p-4'>
+                {movie.overview}
             </p>
         </div>
         <div className='text-right'>
@@ -123,7 +123,7 @@ function Comments({ movie }) {
     return <>
         <h2 className='mt-16 font-bold text-2xl'> Comentarios</h2>
         <Separator />
-        <Assessments comments={comments} createComment={createComment} film={movie.id}/>
+        <Assessments comments={comments} createComment={createComment} film={movie.id} />
     </>
 }
 function Tagline({ movie }) {

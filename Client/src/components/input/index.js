@@ -1,14 +1,14 @@
 export function Input({
-                                  type = 'text',
-                                  className = '',
-                                  labelClassName = '',
-                                  before: BeforeIcon = null,
-                                  after: AfterIcon = null,
-                                  label = '',
-                                  errors = false,
-                                  variant = '',
-                                  ...props
-                              }) {
+    type = 'text',
+    className = '',
+    labelClassName = '',
+    before: BeforeIcon = null,
+    after: AfterIcon = null,
+    label = '',
+    errors = false,
+    variant = '',
+    ...props
+}) {
     let inputStyles
     let labelStyles
 
@@ -29,21 +29,21 @@ export function Input({
             break
     }
 
-    return <label className = {`block text-sm font-bold space-y-2 ${labelStyles} ${labelClassName}`}>
-        { label !== '' ? <span>{label}</span> : null }
-        <p className = { `relative w-full transition
+    return <label className={`block text-sm font-bold space-y-2 ${labelStyles} ${labelClassName}`}>
+        {label !== '' ? <span>{label}</span> : null}
+        <p className={`relative w-full transition
                           ${errors ? 'ring ring-red-500' : ''}`
         }>
-            { BeforeIcon !== null ? <BeforeIcon className = 'absolute top-4 left-0 w-4 mx-4'/> : null }
-            <input type = { type }
-                   className = {`rounded outline-none h-12 w-full font-medium
-                                 ${ BeforeIcon !== null ? 'pl-12' : 'pl-4'}
-                                 ${ AfterIcon !== null ? 'pr-12' : 'pr-4'}
-                                 ${ inputStyles }
-                                 ${ className }`}
-                   { ...props }
+            {BeforeIcon !== null ? <BeforeIcon className='absolute top-4 left-0 w-4 mx-4' /> : null}
+            <input type={type}
+                className={`rounded outline-none h-12 w-full font-medium
+                                 ${BeforeIcon !== null ? 'pl-12' : 'pl-4'}
+                                 ${AfterIcon !== null ? 'pr-12' : 'pr-4'}
+                                 ${inputStyles}
+                                 ${className}`}
+                {...props}
             />
-            { AfterIcon !== null ? <AfterIcon className = 'absolute top-4 left-0 w-4 mx-4'/> : null }
+            {AfterIcon !== null ? <AfterIcon className='absolute top-4 left-0 w-4 mx-4' /> : null}
         </p>
     </label>
 
