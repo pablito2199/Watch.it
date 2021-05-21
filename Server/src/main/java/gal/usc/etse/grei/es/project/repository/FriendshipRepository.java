@@ -9,4 +9,6 @@ import java.util.Optional;
 
 public interface FriendshipRepository extends MongoRepository<Friendship, String> {
     Optional<Page<Friendship>> getAllByUserOrFriend(String user, String friend, Pageable request);
+
+    void deleteAllByUserOrFriend(String userMail, String userMail1);
 }

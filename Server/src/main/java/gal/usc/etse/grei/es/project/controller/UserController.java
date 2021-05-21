@@ -867,7 +867,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not the friend");
         }
         //si ya se ha aceptado la amistad
-        if (friendships.get(friendship).get().getConfirmed() != null) {
+        if (friendships.get(friendship).get().getConfirmed()) {
             //devolvemos código de error 400
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship already exists");
         }
@@ -981,7 +981,7 @@ public class UserController {
     //método DELETE para eliminar una amistad
     //link al servicio en users/{id}/friendships, consumes, pues necesita los datos del body
     @DeleteMapping(
-            path = "{user}/friendships/{friendship}"
+            path = "{user}/friendships/{friend}"
     )
     @Operation(
             operationId = "deleteFriend",
@@ -1018,8 +1018,8 @@ public class UserController {
     ResponseEntity<Friendship> delete(
             @Parameter(name = "user", required = true)
             @PathVariable("user") String user,
-            @Parameter(name = "friendship", required = true)
-            @PathVariable("friendship") String friendship
+            @Parameter(name = "friend", required = true)
+            @PathVariable("friend") String friend
     ) {
         //si el usuario no se encuentra en la base de datos
         if (!users.get(user).isPresent()) {
@@ -1027,23 +1027,12 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         //si la amistad no se encuentra en la base de datos
-        if (!friendships.get(friendship).isPresent()) {
+        if (!friendships.getAllFriends(user).contains(friend)) {
             //devolvemos código de error 404 al producirse un error de búsqueda
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
-        }
-        //si el usuario no es el user o el friend
-        if ((!user.equals(friendships.get(friendship).get().getUser()) &&
-                !user.equals(friendships.get(friendship).get().getFriend()))) {
-            //devolvemos código de error 400 al intentar eliminar una amistad que no es suya
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not in the friendship");
-        }
-        //si no se ha aceptado la amistad todavía
-        if (friendships.get(friendship).get().getConfirmed() == null) {
-            //devolvemos código de error 400
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Friendship not accepted yet");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friend not found");
         }
         //eliminamos la amistad
-        friendships.delete(friendship);
+        friendships.delete(friend);
 
         //creamos los enlaces correspondientes
         List<String> sort = new ArrayList<>();

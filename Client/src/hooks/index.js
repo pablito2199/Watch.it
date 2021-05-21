@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import API from '../api'
 
 export function useMovies(query = {}) {
-    const [data, setData] = useState({ content: [], pagination: { hasNext: false, hasPrevious: false }})
+    const [data, setData] = useState({ content: [], pagination: { hasNext: false, hasPrevious: false } })
     const queryString = JSON.stringify(query)
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export function useMovie(id = '') {
 
     const update = movie => API.instance()
         .updateMovie(id, movie)
-        .then(updated =>  {return updated}) 
+        .then(updated => { return updated })
 
     return {
         movie: data,
@@ -50,12 +50,12 @@ export function useUser(id = null) {
     }, [userId])
 
     const create = user => API.instance()
-            .createUser(user)
-            .then(user => setData(user))
+        .createUser(user)
+        .then(user => setData(user))
 
     const update = user => API.instance()
-            .updateUser(id, user)
-            .then(updated => {return updated})
+        .updateUser(id, user)
+        .then(updated => { return updated })
 
     return {
         user: data,
@@ -76,18 +76,31 @@ export function useFriends(id = null) {
             })
     }, [userId])
 
-    /*const update = user => API.instance()
-            .updateUser(id, user)
-            .then(user => setData(user))*/
+    const deleteFriend = friend => API.instance()
+        .deleteFriend(userId, friend)
+        .then(() => {
+            API.instance()
+                .findFriendships(userId)
+                .then(setData)
+        })
+
+    const update = friend => API.instance()
+        .updateFriendship(userId, friend)
+        .then(() => {
+            API.instance()
+                .findFriendships(userId)
+                .then(setData)
+        })
 
     return {
         friends: data,
-        //update
+        update,
+        deleteFriend
     }
 }
 
-export function useComments(query = {}){
-    const [data, setData] = useState({ content: [], pagination: { hasNext: false, hasPrevious: false }})
+export function useComments(query = {}) {
+    const [data, setData] = useState({ content: [], pagination: { hasNext: false, hasPrevious: false } })
     const queryString = JSON.stringify(query)
 
     useEffect(() => {
@@ -99,7 +112,7 @@ export function useComments(query = {}){
     const create = comment => {
         API.instance()
             .createComment(comment)
-            .then( () => {
+            .then(() => {
                 API.instance()
                     .findComments(query)
                     .then(setData)

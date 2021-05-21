@@ -64,14 +64,22 @@ function PendingFriendships({ user }) {
     return <>
         <h2 className='mt-16 font-bold text-2xl'>Solicitudes de amistad</h2>
         <Separator />
-        <div className='flex flex-col'>
+        <div className='inline-grid grid-cols-3'>
             <ObtainFriendsNotAccepted user={user} />
         </div>
     </>
 }
 
 function ObtainFriendsNotAccepted({ user }) {
-    const { friends } = useFriends(user.email)
+    const { friends, deleteFriend, update } = useFriends(user.email)
+
+    const submitCancel = friend => async (event) => {
+        await deleteFriend(friend)
+    }
+
+    const submitAccept = friend => async (event) => {
+        await update(friend)
+    }
 
     let render = <></>
 
@@ -80,31 +88,21 @@ function ObtainFriendsNotAccepted({ user }) {
             friendship.confirmed === false
             &&
             (
-                friendship.user === user.email
-                    ?
-                    <div key={friendship.id} className='w-full ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ maxWidth: '450px' }}>
-                        <span className='ml-4 mt-4 font-bold'>{friendship.friend}</span>
-                        <div className='flex mt-3 mr-3'>
-                            <DeclineRequest
-                                className='w-8 h-8 mr-2'
-                            />
-                            <AcceptRequest
-                                className='w-8 h-8'
-                            />
-                        </div>
+                friendship.friend === user.email
+                &&
+                <div key={friendship.id} className='ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ minWidth: '470px' }}>
+                    <span className='ml-4 mt-4 font-bold'>{friendship.user}</span>
+                    <div className='flex mt-3 mr-3'>
+                        <DeclineRequest
+                            className='cursor-pointer w-8 h-8 mr-2'
+                            onClick={submitCancel(friendship.user)}
+                        />
+                        <AcceptRequest
+                            className='cursor-pointer w-8 h-8'
+                            onClick={submitAccept(friendship.id)}
+                        />
                     </div>
-                    :
-                    <div key={friendship.id} className='ml-4 mt-6 h-24 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ maxWidth: '420px' }}>
-                        <span className='ml-4 mt-4 font-bold'>{friendship.user}</span>
-                        <div className='flex mt-3 mr-3'>
-                            <DeclineRequest
-                                className='w-8 h-8 mr-2'
-                            />
-                            <AcceptRequest
-                                className='w-8 h-8'
-                            />
-                        </div>
-                    </div>
+                </div>
             )
         );
     }

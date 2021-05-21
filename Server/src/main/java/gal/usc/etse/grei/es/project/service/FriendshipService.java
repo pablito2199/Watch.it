@@ -104,9 +104,9 @@ public class FriendshipService {
         return friendships.insert(friendship);
     }
 
-    //elimina la valoración con el id correspondiente
-    public void delete(String id) {
-        friendships.deleteById(id);
+    //elimina la valoración con el amigo correspondiente
+    public void delete(String friend) {
+        friendships.deleteAllByUserOrFriend(friend, friend);
     }
 
     //comprueba si dos usuarios son amigos

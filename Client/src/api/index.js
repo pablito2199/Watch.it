@@ -263,4 +263,43 @@ export default class API {
             return false
         }
     }
+
+    async updateFriendship(user, friend) {
+        const requestOptions = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": this.#token
+            }
+        };
+
+        console.log(user)
+        console.log(friend)
+
+        const response = await fetch(`http://localhost:8080/users/${user}/friendships/${friend}`, requestOptions);
+
+        if (response.status === 200) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    async deleteFriend(user, friend) {
+        const requestOptions = {
+            method: 'DELETE',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": this.#token
+            }
+        };
+
+        const response = await fetch(`http://localhost:8080/users/${user}/friendships/${friend}`, requestOptions);
+
+        if (response.status === 200) {
+            return true
+        } else {
+            return false
+        }
+    }
 }
