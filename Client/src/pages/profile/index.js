@@ -34,6 +34,7 @@ function Header({ user }) {
             src={user.picture}
             alt={user.name}
             className='absolute w-64 rounded-full shadow-xl z-20'
+            style={{ aspectRatio: '1/1' }}
         />
         <hgroup className='ml-12 flex-1 mt-28'>
             <h1 className={`bg-black bg-opacity-50 backdrop-filter backdrop-blur 

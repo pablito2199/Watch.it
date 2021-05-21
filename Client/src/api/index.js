@@ -80,7 +80,7 @@ export default class API {
                 pagination: {
                     hasNext: !movieData.last,
                     hasPrevious: !movieData.first
-                } 
+                }
             }
         }
     }
@@ -118,7 +118,7 @@ export default class API {
     }
 
     async findFriendships(userId) {
-        const requestOptions = {
+        let requestOptions = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -126,10 +126,32 @@ export default class API {
             }
         };
 
-        const response = await fetch(`http://localhost:8080/users/${userId}/friendships`, requestOptions);
-        
-        if (response.status === 200) {
-            return await response.json()
+        const dataAux = await fetch(`http://localhost:8080/users/${userId}/friendships`, requestOptions);
+
+        const data = await dataAux.json()
+        for (let i = 0; i < data.content.length; i++) {
+            requestOptions = {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": this.#token
+                }
+            };
+
+            let response
+            if (userId === data.content[i].user) {
+                response = await fetch(`http://localhost:8080/users/${data.content[i].friend}`, requestOptions);
+            } else {
+                response = await fetch(`http://localhost:8080/users/${data.content[i].user}`, requestOptions);
+            }
+
+            const friendData = await response.json()
+            data.content[i].picture = friendData.picture
+            data.content[i].name = friendData.name
+        }
+
+        if (dataAux.status === 200) {
+            return data
         }
     }
 

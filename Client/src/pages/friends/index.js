@@ -1,4 +1,4 @@
-import { BanOutline as DeclineRequest, CheckCircleOutline as AcceptRequest, CalendarOutline as Calendar, LocationMarkerOutline as Location } from '@graywolfai/react-heroicons'
+import { BanOutline as DeclineRequest, CheckCircleOutline as AcceptRequest, CalendarOutline as Calendar, XCircleOutline as DeleteFriendship, LocationMarkerOutline as Location } from '@graywolfai/react-heroicons'
 import { useState } from 'react'
 import { Shell, Separator } from '../../components'
 
@@ -6,6 +6,7 @@ import { useUser, useFriends } from '../../hooks'
 
 export default function Profile() {
     const { user, createUser, updateUser } = useUser()
+    const { friends, deleteFriend, update } = useFriends(user.email)
 
     return <Shell>
         <div className='mx-auto w-full max-w-screen-2xl p-8'>
@@ -16,8 +17,8 @@ export default function Profile() {
                 className='absolute top-2 left-0 right-0 w-full object-cover filter blur transform scale-105'
             />
             <Header user={user} />
-            <PendingFriendships user={user} />
-            <AcceptedFriendships user={user} />
+            <PendingFriendships user={user} friends={friends} deleteFriend={deleteFriend} update={update}/>
+            <AcceptedFriendships user={user} friends={friends} deleteFriend={deleteFriend} />
         </div>
     </Shell>
 }
@@ -60,19 +61,17 @@ function Info({ user }) {
     </div>
 }
 
-function PendingFriendships({ user }) {
+function PendingFriendships({ user, friends, deleteFriend, update }) {
     return <>
         <h2 className='mt-16 font-bold text-2xl'>Solicitudes de amistad</h2>
         <Separator />
         <div className='inline-grid grid-cols-3'>
-            <ObtainFriendsNotAccepted user={user} />
+            <ObtainFriendsNotAccepted user={user} friends={friends} deleteFriend={deleteFriend} update={update}/>
         </div>
     </>
 }
 
-function ObtainFriendsNotAccepted({ user }) {
-    const { friends, deleteFriend, update } = useFriends(user.email)
-
+function ObtainFriendsNotAccepted({ user, friends, deleteFriend, update }) {
     const submitCancel = friend => async (event) => {
         await deleteFriend(friend)
     }
@@ -110,42 +109,61 @@ function ObtainFriendsNotAccepted({ user }) {
     return render
 }
 
-function AcceptedFriendships({ user }) {
-
+function AcceptedFriendships({ user, friends, deleteFriend }) {
     return <>
         <h2 className='mt-16 font-bold text-2xl'>Amigos</h2>
         <Separator />
-        <div>
-            <ObtainFriendsAccepted user={user} />
+        <div className='inline-grid grid-cols-3'>
+            <ObtainFriendsAccepted user={user} friends={friends} deleteFriend={deleteFriend} />
         </div>
     </>
 }
 
-function ObtainFriendsAccepted({ user }) {
-    const { friends } = useFriends(user.email)
+function ObtainFriendsAccepted({ user, friends, deleteFriend }) {
+    const submit = friend => async (event) => {
+        await deleteFriend(friend)
+    }
 
     let render = <></>
 
     if (friends != null && friends.content != null) {
-        /*render = friends.content.map((friendship) =>
+        render = friends.content.map((friendship) =>
             friendship.confirmed === true
             &&
             (
-                friendship.user === user.email
-                    ?
-                    <div key={friendship.friend} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
-                        <div className='ml-8 mt-4 flex justify-between'>
-                            <span className='font-bold'>{friendship.friend}</span>
+                <div key={friendship.id} className='ml-8 mt-6 h-36 bg-white rounded p-4 flex justify-between shadow-md border-2' style={{ minWidth: '450px' }}>
+                    <div className='m-auto'>
+                        <img
+                            style={{ aspectRatio: '1/1' }}
+                            src={friendship.picture}
+                            alt={friendship.name}
+                            className='w-20 rounded-full shadow-xl' />
+                    </div>
+                    <div>
+                        <span className='ml-32 font-bold'>{friendship.name}</span>
+                        <div className='flex mt-6 ml-12'>
+                            <div className='flex flex-col text-right text-gray-500 ml-12'>
+                                <span>Sois amigos desde</span>
+                                <span>el {friendship.since.day}/{friendship.since.month}/{friendship.since.year}</span>
+                            </div>
+                            {
+                                friendship.user === user.email
+                                    ?
+                                    <DeleteFriendship
+                                        className='cursor-pointer w-8 h-8 align-middle m-auto ml-4'
+                                        onClick={submit(friendship.friend)}
+                                    />
+                                    :
+                                    <DeleteFriendship
+                                        className='cursor-pointer w-8 h-8 align-middle m-auto ml-4'
+                                        onClick={submit(friendship.user)}
+                                    />
+                            }
                         </div>
                     </div>
-                    :
-                    <div key={friendship.user} className='mt-12 h-96 bg-white rounded p-4 flex flex-col shadow-md border-2' style={{ minWidth: '900px' }}>
-                        <div className='ml-8 mt-4 flex justify-between'>
-                            <span className='font-bold'>{friendship.user}</span>
-                        </div>
-                    </div>
+                </div>
             )
-        );*/
+        );
     }
 
     return render
