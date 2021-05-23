@@ -9,39 +9,41 @@ export function Assessments({ comments, createComment, film }) {
 
     return <>
         {
-            comments.content != null
+            comments != undefined && comments.content != null
             &&
-            <div className='flex relative'>
-                <div ref={scroll} className={`flex gap-8 overflow-hidden`}>
-                    <ObtainComments comments={comments} />
+            (
+                <div className='flex relative'>
+                    <div ref={scroll} className={`flex gap-8 overflow-hidden`}>
+                        <ObtainComments comments={comments} />
+                    </div>
+                    <div className='h-96 cursor-pointer absolute right-0 w-16 bg-white opacity-70'></div>
+                    <button
+                        className='h-96 absolute right-0 w-16'
+                        onClick={() => {
+                            scroll.current.scrollLeft += 400
+                            setWidth(scroll.current.scrollLeft)
+                        }}
+                    >
+                        <ArrowRight className='ml-3 h-10' />
+                    </button>
+                    {
+                        width > 0
+                        &&
+                        <>
+                            <div className='h-96 cursor-pointer absolute w-16 bg-white opacity-70'></div>
+                            <button
+                                className='h-96 cursor-pointer absolute w-16'
+                                onClick={() => {
+                                    scroll.current.scrollLeft -= 400
+                                    setWidth(scroll.current.scrollLeft)
+                                }}
+                            >
+                                <ArrowLeft className='ml-3 h-10' />
+                            </button>
+                        </>
+                    }
                 </div>
-                <div className='h-96 cursor-pointer absolute right-0 w-16 bg-white opacity-70'></div>
-                <button
-                    className='h-96 absolute right-0 w-16'
-                    onClick={() => {
-                        scroll.current.scrollLeft += 400
-                        setWidth(scroll.current.scrollLeft)
-                    }}
-                >
-                    <ArrowRight className='ml-3 h-10' />
-                </button>
-                {
-                    width > 0
-                    &&
-                    <>
-                        <div className='h-96 cursor-pointer absolute w-16 bg-white opacity-70'></div>
-                        <button
-                            className='h-96 cursor-pointer absolute w-16'
-                            onClick={() => {
-                                scroll.current.scrollLeft -= 400
-                                setWidth(scroll.current.scrollLeft)
-                            }}
-                        >
-                            <ArrowLeft className='ml-3 h-10' />
-                        </button>
-                    </>
-                }
-            </div>
+            )
         }
         <CreateComment createComment={createComment} film={film} />
     </>
