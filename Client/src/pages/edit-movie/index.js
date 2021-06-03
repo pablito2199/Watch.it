@@ -165,9 +165,15 @@ function CrewMember({ movie, job, label }) {
 function Links({ movie }) {
     const [selection, setSelection] = useState('')
     const [url, setUrl] = useState('')
+    const [update, setUpdate] = useState(false)
     const [newResources, setNewResources] = useState([])
     let resources = movie?.resources?.filter(r => !['POSTER', 'BACKDROP', 'TRAILER'].includes(r.type))
     let links
+
+    if (update) {
+        resources = newResources
+        setUpdate(false)
+    }
 
     const addResource = async (event) => {
         if (selection !== '' && url !== '') {
@@ -177,7 +183,7 @@ function Links({ movie }) {
             }
             movie.resources.push(newResource)
             setNewResources(movie.resources)
-            resources = newResources
+            setUpdate(true)
         }
     }
 

@@ -295,9 +295,6 @@ export default class API {
             }
         };
 
-        console.log(user)
-        console.log(friend)
-
         const response = await fetch(`http://localhost:8080/users/${user}/friendships/${friend}`, requestOptions);
 
         if (response.status === 200) {
@@ -318,7 +315,7 @@ export default class API {
 
         const response = await fetch(`http://localhost:8080/users/${user}/friendships/${friend}`, requestOptions);
 
-        if (response.status === 200) {
+        if (response.status === 204) {
             return true
         } else {
             return false
